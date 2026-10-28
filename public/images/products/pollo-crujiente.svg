@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="100%" stop-color="#ffedd5"/>
+    </linearGradient>
+    <linearGradient id="crust" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </linearGradient>
+    <linearGradient id="bone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#78350f" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <circle cx="200" cy="165" r="95" fill="#fed7aa" opacity="0.4"/>
+  <ellipse cx="200" cy="235" rx="110" ry="18" fill="#78350f" opacity="0.12"/>
+  <g filter="url(#shadow)" transform="rotate(-15 190 150)">
+    <!-- Chicken Meat -->
+    <path d="M120 130 C100 80 180 60 220 90 C260 120 280 160 250 200 C210 230 140 220 120 170 Z" fill="url(#crust)"/>
+    <!-- Crispy flakes & texture -->
+    <circle cx="160" cy="110" r="5" fill="#fef08a" opacity="0.6"/>
+    <circle cx="190" cy="95" r="4" fill="#fbbf24" opacity="0.8"/>
+    <circle cx="225" cy="130" r="6" fill="#f59e0b" opacity="0.9"/>
+    <circle cx="240" cy="165" r="5" fill="#78350f" opacity="0.4"/>
+    <circle cx="150" cy="150" r="7" fill="#fbbf24" opacity="0.7"/>
+    <circle cx="180" cy="175" r="4" fill="#fef08a" opacity="0.7"/>
+    <circle cx="210" cy="190" r="5" fill="#92400e" opacity="0.5"/>
+    <path d="M140 100 Q160 85 180 95" stroke="#fef08a" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+    <path d="M210 115 Q240 135 235 160" stroke="#fef08a" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+    <!-- Bone -->
+    <path d="M130 160 L75 195 C68 200 60 195 58 188 C55 180 60 172 68 170 C60 165 60 155 68 152 C75 150 82 155 85 162 L125 145 Z" fill="url(#bone)" stroke="#d97706" stroke-width="1.5"/>
+  </g>
+  <!-- Herb Garnish -->
+  <path d="M270 210 Q285 190 280 180 Q290 195 285 220" stroke="#16a34a" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <circle cx="282" cy="188" r="4" fill="#22c55e"/>
+  <circle cx="272" cy="205" r="3.5" fill="#15803d"/>
+</svg>

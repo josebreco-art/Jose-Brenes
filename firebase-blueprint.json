@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "FiscalCounter": {
+      "title": "FiscalCounter",
+      "description": "Contador atómico de consecutivos fiscales para Hacienda DGT v4.4",
+      "type": "object",
+      "properties": {
+        "branch": { "type": "string" },
+        "terminal": { "type": "string" },
+        "documentType": { "type": "string" },
+        "lastConsecutive": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["branch", "terminal", "documentType", "lastConsecutive"]
+    },
+    "ElectronicDocument": {
+      "title": "ElectronicDocument",
+      "description": "Comprobante electrónico emitido según normativa DGT v4.4",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "numericKey": { "type": "string" },
+        "consecutive": { "type": "string" },
+        "documentType": { "type": "string" },
+        "status": { "type": "string" },
+        "total": { "type": "number" }
+      },
+      "required": ["numericKey", "consecutive", "documentType", "status"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Platillo o producto del menú con detalles e imagen",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "categoryId": { "type": "string" },
+        "image": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "price", "categoryId"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Categoría del menú",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "icon": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    }
+  },
+  "firestore": {
+    "/fiscal_counters/{counterId}": {
+      "schema": "FiscalCounter",
+      "description": "Almacenamiento de contadores de consecutivos fiscales por sucursal, terminal y tipo de documento"
+    },
+    "/electronic_documents/{numericKey}": {
+      "schema": "ElectronicDocument",
+      "description": "Registro de comprobantes electrónicos emitidos y sus respuestas"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Colección de productos con datos completos e imágenes"
+    }
+  }
+}

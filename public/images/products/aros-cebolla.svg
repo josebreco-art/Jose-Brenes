@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bga" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <filter id="sha">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#78350f" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bga)"/>
+  <ellipse cx="200" cy="255" rx="130" ry="18" fill="#78350f" opacity="0.14"/>
+
+  <!-- Crispy Golden Battered Onion Rings Stack -->
+  <g filter="url(#sha)">
+    <!-- Bottom Ring 1 -->
+    <ellipse cx="140" cy="190" rx="55" ry="32" fill="none" stroke="url(#ring)" stroke-width="26" transform="rotate(-15 140 190)"/>
+    <ellipse cx="140" cy="190" rx="55" ry="32" fill="none" stroke="#fef08a" stroke-width="4" stroke-dasharray="8,12" transform="rotate(-15 140 190)"/>
+
+    <!-- Bottom Ring 2 -->
+    <ellipse cx="260" cy="190" rx="55" ry="32" fill="none" stroke="url(#ring)" stroke-width="26" transform="rotate(15 260 190)"/>
+    <ellipse cx="260" cy="190" rx="55" ry="32" fill="none" stroke="#fef08a" stroke-width="4" stroke-dasharray="8,12" transform="rotate(15 260 190)"/>
+
+    <!-- Middle Ring -->
+    <ellipse cx="200" cy="150" rx="52" ry="30" fill="none" stroke="url(#ring)" stroke-width="24" transform="rotate(5 200 150)"/>
+    <ellipse cx="200" cy="150" rx="52" ry="30" fill="none" stroke="#fef08a" stroke-width="4" stroke-dasharray="6,10" transform="rotate(5 200 150)"/>
+
+    <!-- Top Ring Leaning -->
+    <ellipse cx="180" cy="110" rx="46" ry="26" fill="none" stroke="url(#ring)" stroke-width="22" transform="rotate(-25 180 110)"/>
+    <ellipse cx="180" cy="110" rx="46" ry="26" fill="none" stroke="#fef08a" stroke-width="3" stroke-dasharray="5,8" transform="rotate(-25 180 110)"/>
+
+    <!-- Dipping Sauce Ramekin -->
+    <g transform="translate(260, 185)">
+      <polygon points="10,20 60,20 52,55 18,55" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+      <ellipse cx="35" cy="20" rx="25" ry="8" fill="#e2e8f0"/>
+      <!-- Pink / Golf Sauce Dip -->
+      <ellipse cx="35" cy="20" rx="22" ry="6" fill="#f43f5e"/>
+      <circle cx="35" cy="20" r="3" fill="#15803d"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bgrn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="100%" stop-color="#fef08a"/>
+    </linearGradient>
+    <linearGradient id="juice" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+    <filter id="shrn">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#78350f" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bgrn)"/>
+  <ellipse cx="200" cy="265" rx="100" ry="18" fill="#78350f" opacity="0.14"/>
+
+  <!-- Tropical Natural Juice in a Tall Glass with Straw & Fruit Slices -->
+  <g filter="url(#shrn)">
+    <!-- Straw -->
+    <path d="M210 110 L240 30 L270 20" stroke="#16a34a" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M210 110 L240 30 L270 20" stroke="#86efac" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- Glass Contour & Juice Body -->
+    <polygon points="140,80 260,80 235,245 165,245" fill="url(#juice)"/>
+    <ellipse cx="200" cy="80" rx="60" ry="12" fill="#fbbf24"/>
+    <ellipse cx="200" cy="80" rx="55" ry="9" fill="#f59e0b"/>
+
+    <!-- Glass Rim & Walls (Transparent look) -->
+    <polygon points="135,75 265,75 238,250 162,250" fill="#ffffff" opacity="0.15" stroke="#ffffff" stroke-width="3"/>
+    <!-- Glass Highlight Reflection -->
+    <path d="M152 90 L170 235" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+    <path d="M245 90 L230 235" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+
+    <!-- Floating Ice Cubes inside juice -->
+    <rect x="175" y="95" width="28" height="28" rx="4" fill="#ffffff" opacity="0.4" transform="rotate(15 190 110)"/>
+    <rect x="210" y="125" width="25" height="25" rx="4" fill="#ffffff" opacity="0.35" transform="rotate(-10 220 135)"/>
+
+    <!-- Orange / Lemon Slice on Glass Rim -->
+    <g transform="translate(130, 45)">
+      <path d="M0 40 A35 35 0 0 1 70 40 Z" fill="#ea580c" transform="rotate(-30 35 40)"/>
+      <path d="M5 38 A30 30 0 0 1 65 38 Z" fill="#fbbf24" transform="rotate(-30 35 40)"/>
+      <!-- Pulps -->
+      <line x1="35" y1="40" x2="35" y2="12" stroke="#fef08a" stroke-width="2" transform="rotate(-30 35 40)"/>
+      <line x1="35" y1="40" x2="15" y2="20" stroke="#fef08a" stroke-width="2" transform="rotate(-30 35 40)"/>
+      <line x1="35" y1="40" x2="55" y2="20" stroke="#fef08a" stroke-width="2" transform="rotate(-30 35 40)"/>
+    </g>
+
+    <!-- Mint Leaves Garnish -->
+    <ellipse cx="215" cy="72" rx="14" ry="7" fill="#15803d" transform="rotate(-25 215 72)"/>
+    <ellipse cx="225" cy="76" rx="12" ry="6" fill="#22c55e" transform="rotate(20 225 76)"/>
+  </g>
+</svg>

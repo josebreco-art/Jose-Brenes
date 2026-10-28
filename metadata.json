@@ -1,0 +1,9 @@
+{
+  "name": "Pollo Frito Sabor Cervanteño POS",
+  "description": "Sistema POS táctil para restaurante con KDS, control de caja, gestión de clientes y facturación electrónica autónoma oficial para el Ministerio de Hacienda de Costa Rica (DGT v4.4 XAdES-EPES, llave criptográfica .p12, consecutivos y ATV).",
+  "requestFrame": "none",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

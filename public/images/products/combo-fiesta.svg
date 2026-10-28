@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bgf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="100%" stop-color="#fed7aa"/>
+    </linearGradient>
+    <linearGradient id="fchk" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#9a3412"/>
+    </linearGradient>
+    <linearGradient id="bktf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bgf)"/>
+  <ellipse cx="200" cy="260" rx="160" ry="24" fill="#7c2d12" opacity="0.15"/>
+  
+  <!-- Fiesta Festive Banner / Confetti -->
+  <circle cx="80" cy="45" r="5" fill="#f59e0b"/>
+  <circle cx="120" cy="30" r="4" fill="#ef4444"/>
+  <circle cx="280" cy="35" r="5" fill="#10b981"/>
+  <circle cx="320" cy="50" r="4" fill="#3b82f6"/>
+  <path d="M50 40 Q200 10 350 40" stroke="#f97316" stroke-width="2" stroke-dasharray="6,6" fill="none"/>
+
+  <!-- Big Bucket in Center -->
+  <polygon points="120,110 280,110 255,230 145,230" fill="url(#bktf)"/>
+  <ellipse cx="200" cy="110" rx="80" ry="10" fill="#ef4444"/>
+  
+  <!-- Chicken Heap -->
+  <ellipse cx="170" cy="90" rx="30" ry="22" fill="url(#fchk)" transform="rotate(-15 170 90)"/>
+  <ellipse cx="230" cy="90" rx="30" ry="22" fill="url(#fchk)" transform="rotate(15 230 90)"/>
+  <ellipse cx="200" cy="75" rx="34" ry="24" fill="url(#fchk)"/>
+  <circle cx="195" cy="70" r="4" fill="#fef08a"/>
+  
+  <!-- 2 Large Sodas Beside Bucket -->
+  <polygon points="50,140 85,140 78,220 57,220" fill="#0284c7"/>
+  <ellipse cx="67" cy="140" rx="17" ry="4" fill="#38bdf8"/>
+  <path d="M67 140 L70 115 L60 105" stroke="#bae6fd" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+  <polygon points="315,140 350,140 343,220 322,220" fill="#0284c7"/>
+  <ellipse cx="332" cy="140" rx="17" ry="4" fill="#38bdf8"/>
+  <path d="M332 140 L335 115 L345 105" stroke="#bae6fd" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+  <!-- Side Boxes (Fries & Coleslaw) -->
+  <polygon points="90,190 145,190 135,245 100,245" fill="#f59e0b"/>
+  <polygon points="255,190 310,190 300,245 265,245" fill="#10b981"/>
+
+  <!-- Badge -->
+  <rect x="160" y="150" width="80" height="40" rx="8" fill="#fef08a" stroke="#d97706" stroke-width="2"/>
+  <text x="200" y="167" font-family="system-ui, sans-serif" font-weight="900" font-size="12" fill="#dc2626" text-anchor="middle">FIESTA</text>
+  <text x="200" y="181" font-family="system-ui, sans-serif" font-weight="800" font-size="9" fill="#78350f" text-anchor="middle">FAMILIAR</text>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bgb" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <linearGradient id="bucket" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b91c1c"/>
+      <stop offset="60%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </linearGradient>
+    <linearGradient id="chk" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </linearGradient>
+    <filter id="shb">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#450a0a" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bgb)"/>
+  <ellipse cx="200" cy="265" rx="110" ry="18" fill="#450a0a" opacity="0.15"/>
+  <!-- Chicken Pieces Overflowing -->
+  <g transform="translate(0, -10)">
+    <ellipse cx="140" cy="110" rx="35" ry="25" fill="url(#chk)" transform="rotate(-20 140 110)"/>
+    <ellipse cx="200" cy="95" rx="40" ry="28" fill="url(#chk)"/>
+    <ellipse cx="260" cy="105" rx="36" ry="25" fill="url(#chk)" transform="rotate(25 260 105)"/>
+    <ellipse cx="165" cy="125" rx="38" ry="26" fill="url(#chk)" transform="rotate(-5 165 125)"/>
+    <ellipse cx="235" cy="120" rx="38" ry="26" fill="url(#chk)" transform="rotate(10 235 120)"/>
+    <!-- Crispy dots -->
+    <circle cx="195" cy="90" r="4" fill="#fef08a" opacity="0.9"/>
+    <circle cx="215" cy="105" r="5" fill="#fde047" opacity="0.9"/>
+    <circle cx="150" cy="115" r="4" fill="#fef08a" opacity="0.9"/>
+    <circle cx="250" cy="115" r="4" fill="#fef08a" opacity="0.9"/>
+    <!-- Bone sticks -->
+    <path d="M125 90 L105 75 C100 70 95 75 97 80 C99 85 105 85 110 82 Z" fill="#fef3c7"/>
+    <path d="M280 85 L300 70 C305 65 310 70 308 75 C306 80 300 80 295 77 Z" fill="#fef3c7"/>
+  </g>
+  <!-- Bucket Body -->
+  <g filter="url(#shb)">
+    <polygon points="100,130 300,130 270,260 130,260" fill="url(#bucket)"/>
+    <!-- Rim -->
+    <ellipse cx="200" cy="130" rx="100" ry="12" fill="#ef4444"/>
+    <ellipse cx="200" cy="130" rx="96" ry="9" fill="#991b1b" opacity="0.3"/>
+    <!-- Stripes / Branding -->
+    <polygon points="140,132 165,132 155,260 135,260" fill="#ffffff" opacity="0.9"/>
+    <polygon points="235,132 260,132 245,260 225,260" fill="#ffffff" opacity="0.9"/>
+    <!-- Badge -->
+    <circle cx="200" cy="195" r="32" fill="#fef08a" stroke="#d97706" stroke-width="2"/>
+    <text x="200" y="193" font-family="system-ui, sans-serif" font-weight="900" font-size="14" fill="#991b1b" text-anchor="middle">MEGA</text>
+    <text x="200" y="208" font-family="system-ui, sans-serif" font-weight="800" font-size="10" fill="#b45309" text-anchor="middle">10 PZAS</text>
+  </g>
+</svg>

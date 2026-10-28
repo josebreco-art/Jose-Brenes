@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bgtc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ecfdf5"/>
+      <stop offset="100%" stop-color="#d1fae5"/>
+    </linearGradient>
+    <linearGradient id="tortilla" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="60%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="shtc">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#064e3b" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bgtc)"/>
+  <ellipse cx="200" cy="255" rx="130" ry="18" fill="#064e3b" opacity="0.12"/>
+
+  <!-- Two Rolled Crispy Tacos (Tacos Ticos Tradicionales) -->
+  <g filter="url(#shtc)">
+    <!-- Taco 1 (Back) -->
+    <g transform="rotate(-18 170 170)">
+      <rect x="70" y="145" width="200" height="35" rx="17" fill="url(#tortilla)"/>
+      <circle cx="85" cy="162" r="6" fill="#92400e"/>
+      <circle cx="150" cy="155" r="4" fill="#b45309"/>
+      <circle cx="210" cy="165" r="5" fill="#b45309"/>
+    </g>
+
+    <!-- Taco 2 (Front) -->
+    <g transform="rotate(12 210 180)">
+      <rect x="110" y="150" width="200" height="38" rx="19" fill="url(#tortilla)"/>
+      <circle cx="130" cy="168" r="6" fill="#92400e"/>
+      <circle cx="190" cy="160" r="5" fill="#b45309"/>
+      <circle cx="260" cy="172" r="6" fill="#b45309"/>
+    </g>
+
+    <!-- Shredded Cabbage Topping (Repollo Finamente Picado) -->
+    <path d="M120 120 Q160 100 210 115 Q260 105 290 125 Q270 160 130 155 Z" fill="#bbf7d0"/>
+    <path d="M135 130 Q170 115 220 128" stroke="#4ade80" stroke-width="3" fill="none"/>
+    <path d="M150 145 Q190 130 250 142" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+
+    <!-- Mayonnaise Ribbon -->
+    <path d="M120 125 Q160 145 200 120 Q240 145 280 120" stroke="#fefce8" stroke-width="6" stroke-linecap="round" fill="none"/>
+
+    <!-- Ketchup / Salsa Lizano Drizzle (Salsa Dulce Tica) -->
+    <path d="M130 135 Q170 115 210 140 Q250 115 285 135" stroke="#dc2626" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M140 142 Q175 125 215 148 Q245 130 275 145" stroke="#78350f" stroke-width="3" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Lime Wedge on the side -->
+  <path d="M70 230 A25 25 0 0 1 115 230 Z" fill="#84cc16"/>
+  <path d="M74 230 A21 21 0 0 1 111 230 Z" fill="#a3e635"/>
+  <line x1="92" y1="230" x2="92" y2="210" stroke="#bef264" stroke-width="2"/>
+  <line x1="92" y1="230" x2="80" y2="215" stroke="#bef264" stroke-width="2"/>
+  <line x1="92" y1="230" x2="104" y2="215" stroke="#bef264" stroke-width="2"/>
+</svg>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Pollo Frito Sabor Cervanteño POS</title>
+    <meta name="description" content="Sistema POS táctil para restaurante con KDS, control de caja, gestión de clientes y facturación electrónica autónoma oficial para el Ministerio de Hacienda de Costa Rica (DGT v4.4 XAdES-EPES, llave criptográfica .p12, consecutivos y ATV)." />
+    <meta property="og:title" content="Pollo Frito Sabor Cervanteño POS" />
+    <meta property="og:description" content="Sistema POS táctil para restaurante con KDS, control de caja, gestión de clientes y facturación electrónica autónoma oficial para el Ministerio de Hacienda de Costa Rica (DGT v4.4 XAdES-EPES, llave criptográfica .p12, consecutivos y ATV)." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#451a03" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍗</text></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍗</text></svg>" />
+  </head>
+  <body class="bg-stone-100 text-stone-900 m-0 p-0 font-sans antialiased select-none">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Desregistrar service workers heredados para evitar pantallas en blanco o cachés obsoletas en preview
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var reg of registrations) {
+            reg.unregister();
+          }
+        }).catch(function() {});
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (var name of names) {
+              caches.delete(name);
+            }
+          }).catch(function() {});
+        }
+      }
+    </script>
+  </body>
+</html>
