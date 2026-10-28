@@ -788,6 +788,8 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
                                 src={getLocalProductImage(p.image, p.categoryId, p.name, p.sku)} 
                                 alt={p.name} 
                                 className="w-10 h-10 rounded-xl object-cover bg-stone-100 border border-stone-200 shrink-0" 
+                                loading="lazy"
+                                decoding="async"
                                 onError={(e) => { (e.target as HTMLImageElement).src = '/images/products/pollo-crujiente.svg'; }}
                               />
                               <div>
@@ -1220,6 +1222,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
                           src={getLocalProductImage(editingProduct.image, editingProduct.categoryId, editingProduct.name, editingProduct.sku)}
                           alt="Vista Previa"
                           className="w-14 h-14 rounded-xl object-cover bg-white border border-stone-300 shadow-xs"
+                          decoding="async"
                           onError={(e) => { (e.target as HTMLImageElement).src = '/images/products/pollo-crujiente.svg'; }}
                         />
                         {isUploadingImage && (
@@ -1283,7 +1286,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
                               }`}
                               title={preset.name}
                             >
-                              <img src={preset.path} alt={preset.name} className="w-7 h-7 object-cover rounded" />
+                              <img src={preset.path} alt={preset.name} loading="lazy" decoding="async" className="w-7 h-7 object-cover rounded" />
                               <span className="text-[8px] text-stone-600 truncate max-w-full font-medium mt-0.5 group-hover:text-amber-700">
                                 {preset.name.split(' ')[0]}
                               </span>

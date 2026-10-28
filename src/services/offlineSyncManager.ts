@@ -332,30 +332,37 @@ class OfflineSyncManager {
           taxAmount: Number((params.sale.total - Number((params.sale.total / 1.13).toFixed(5))).toFixed(5)),
           totalLine: params.sale.total,
           totalLineAmount: params.sale.total
-        }] : params.sale.items.map((item, idx) => {
-          let resolvedCabys = item.cabysCode || (item as any).cabysCode;
-          if (!resolvedCabys) {
-            try {
-              if (typeof window !== 'undefined' && window.localStorage) {
-                const cachedProductsStr = localStorage.getItem('sabor_cervanteno_products');
-                if (cachedProductsStr) {
-                  const cachedProducts = JSON.parse(cachedProductsStr);
-                  if (Array.isArray(cachedProducts)) {
-                    const matchedProd = cachedProducts.find((p: any) => p.id === item.productId);
-                    if (matchedProd && matchedProd.cabysCode) {
-                      resolvedCabys = matchedProd.cabysCode;
+        }] : (() => {
+          let lazyCabysMap: Map<string, string> | null = null;
+          return params.sale.items.map((item, idx) => {
+            let resolvedCabys = item.cabysCode || (item as any).cabysCode;
+            if (!resolvedCabys) {
+              try {
+                if (!lazyCabysMap) {
+                  lazyCabysMap = new Map<string, string>();
+                  if (typeof window !== 'undefined' && window.localStorage) {
+                    const cachedProductsStr = localStorage.getItem('sabor_cervanteno_products');
+                    if (cachedProductsStr) {
+                      const cachedProducts = JSON.parse(cachedProductsStr);
+                      if (Array.isArray(cachedProducts)) {
+                        for (const p of cachedProducts) {
+                          if (p && p.id && p.cabysCode) {
+                            lazyCabysMap.set(p.id, p.cabysCode);
+                          }
+                        }
+                      }
                     }
                   }
                 }
+                resolvedCabys = lazyCabysMap.get(item.productId);
+              } catch {
+                // Ignore localStorage parsing issues
               }
-            } catch {
-              // Ignore localStorage parsing issues
             }
-          }
 
-          if (!resolvedCabys || typeof resolvedCabys !== 'string' || resolvedCabys.trim() === '') {
-            throw new Error(`Producto "${item.name}" sin CAByS configurado. Configure el CAByS antes de emitir el comprobante.`);
-          }
+            if (!resolvedCabys || typeof resolvedCabys !== 'string' || resolvedCabys.trim() === '') {
+              throw new Error(`Producto "${item.name}" sin CAByS configurado. Configure el CAByS antes de emitir el comprobante.`);
+            }
 
           const taxRate = (item.taxRate !== undefined && item.taxRate > 1) ? (item.taxRate / 100) : (item.taxRate ?? 0.13);
           const isPriceWithTax = item.isPriceWithTax ?? true;
@@ -386,7 +393,8 @@ class OfflineSyncManager {
             totalLine: totalLineAmount,
             totalLineAmount
           };
-        }),
+        });
+        })(),
         subtotal: (documentType === '01' && (params.useRestaurantServiceLine || params.sale.useRestaurantServiceLine)) 
           ? Number((params.sale.total / 1.13).toFixed(5))
           : Number(params.sale.items.reduce((s, item) => {

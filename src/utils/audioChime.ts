@@ -1,35 +1,73 @@
 /**
- * Sintetizador de campana metálica de restaurante (Web Audio API)
- * Emite sonido de aviso cuando entra una comanda a cocina (KDS).
+ * Campana metálica de servicio de restaurante (Web Audio API)
+ * Efecto sonoro: Un golpe de campana brillante y limpio con resonancia armónica.
+ * - Tono principal (Oscilador senoidal): Inicia en Re 5 (587.33 Hz) y sube rápidamente a La 5 (880.00 Hz) en 150 ms.
+ * - Segundo tono / Armónico (Oscilador triangular): Resuena simultáneamente de La 5 (880.00 Hz) a Re 6 (1174.66 Hz),
+ *   otorgando el brillo y cuerpo metálico de una campana física de acero.
+ * - Duración: 0.85 segundos con un desvanecimiento suave (fade out exponencial) para no saturar el ambiente.
  */
 export function playOrderChime(): void {
   try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-    
-    // Si el contexto está suspendido (por políticas de autoplay del navegador), intentar reanudarlo
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+
+    const ctx = new AudioCtx();
     if (ctx.state === 'suspended') {
       ctx.resume().catch(() => {});
     }
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const now = ctx.currentTime;
+    const attackDuration = 0.15; // 150 milisegundos
+    const totalDuration = 0.85;  // 0.85 segundos de resonancia
+    const stopTime = now + totalDuration;
 
-    osc.type = 'sine';
-    // Frecuencia armónica de timbre de cocina metálico
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.08);
+    // 1. Tono principal: Oscilador senoidal (Re 5: 587.33 Hz -> La 5: 880.00 Hz)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, now);
+    osc1.frequency.exponentialRampToValueAtTime(880.00, now + attackDuration);
 
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    gain1.gain.setValueAtTime(0.35, now);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, stopTime);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
 
-    osc.start();
-    osc.stop(ctx.currentTime + 0.65);
-  } catch {
-    // Si el navegador bloquea audio, continuar silenciosamente
+    // 2. Segundo tono / Armónico: Oscilador triangular (La 5: 880.00 Hz -> Re 6: 1174.66 Hz)
+    // Brillo y timbre metálico de campana de acero
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(880.00, now);
+    osc2.frequency.exponentialRampToValueAtTime(1174.66, now + attackDuration);
+
+    gain2.gain.setValueAtTime(0.20, now);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, stopTime);
+
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+
+    // Iniciar ambos osciladores en simultáneo
+    osc1.start(now);
+    osc2.start(now);
+
+    // Detener suavemente a los 0.85 segundos
+    osc1.stop(stopTime);
+    osc2.stop(stopTime);
+
+    // Liberar recursos de audio
+    setTimeout(() => {
+      try {
+        ctx.close().catch(() => {});
+      } catch {}
+    }, 1200);
+  } catch (err) {
+    console.warn('Audio chime warning:', err);
   }
+}
+
+// Exponer globalmente en window para pruebas y accesibilidad directa
+if (typeof window !== 'undefined') {
+  (window as any).playOrderChime = playOrderChime;
 }

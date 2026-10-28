@@ -1,284 +1,465 @@
-// Catálogo de Actividades Económicas Oficiales (CIIU4 / DGT Ministerio de Hacienda Costa Rica)
-// v4.4 para Facturación Electrónica y respaldo de crédito fiscal D-104
+// Catálogo Oficial de Actividades Económicas de Costa Rica según CIIU 4 / TRIBU-CR
+// Actualizado conforme al Ministerio de Hacienda (Formato subclase TRIBU-CR con punto decimal ej: 5610.0)
 
 export interface EconomicActivity {
-  code: string;
-  description: string;
-  main?: boolean;
-  category?: string;
-  keywords?: string[];
+  code: string; // Formato oficial TRIBU-CR ej: 5610.0
+  description: string; // Descripción oficial según el catálogo DGT / CIIU4
+  category: string; // Sector o categoría
+  keywords?: string[]; // Palabras clave para enriquecer la búsqueda
 }
+
+export const HACIENDA_ECONOMIC_ACTIVITIES: EconomicActivity[] = [
+  { code: '0114.0', description: 'Cultivo de caña de azúcar', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0115.0', description: 'Cultivo de tabaco', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0116.0', description: 'Cultivo de plantas de fibras', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0119.1', description: 'Cultivo de Flores', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0122.1', description: 'Cultivo de banano', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0122.3', description: 'Cultivo de piña', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0122.9', description: 'Cultivo de otras frutas tropicales y subtropicales', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0125.0', description: 'Cultivo de otros frutos y nueces de árboles y arbustos', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0126.1', description: 'Cultivo de palma africana (aceitera)', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0127.1', description: 'Cultivo de café', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0128.0', description: 'Cultivo de especies de plantas aromáticas, medicinales y farmacéuticas', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0141.1', description: 'Cría de ganado Bovino (vacuno) para carne', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0141.2', description: 'Cría de ganado Bovino (vacuno) para producción de leche cruda', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0141.9', description: 'Cría de Búfalos y otra producción de ganado bovino (vacuno)', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0142.0', description: 'Cría de caballos y otros equinos', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0144.0', description: 'Cría de ovejas y cabras', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0145.0', description: 'Cría de cerdos', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0146.2', description: 'Actividades de granja para la producción de huevos de gallina', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0150.0', description: 'Cultivo de productos agrícolas en combinación con la cría de animales (explotación mixta)', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0162.9', description: 'Otras actividades de apoyo a la ganadería', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0163.1', description: 'Beneficio de café', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0163.9', description: 'Otras actividades posteriores a la cosecha', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0170.0', description: 'Caza ordinaria, mediante trampas y actividades de servicio conexas', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0220.0', description: 'Extracción de madera', category: 'Silvicultura y Pesca', keywords: [] },
+  { code: '0321.0', description: 'Acuicultura marina', category: 'Silvicultura y Pesca', keywords: [] },
+  { code: '0510.0', description: 'Extracción de carbón de piedra', category: 'Minería y Canteras', keywords: [] },
+  { code: '0620.0', description: 'Extracción de gas natural', category: 'Minería y Canteras', keywords: [] },
+  { code: '0721.0', description: 'Extracción de minerales metalíferos no ferrosos', category: 'Minería y Canteras', keywords: [] },
+  { code: '0810.0', description: 'Extracción de piedra, arena y arcilla', category: 'Minería y Canteras', keywords: [] },
+  { code: '0891.0', description: 'Extracción de minerales para la fabricación de abonos y productos químicos', category: 'Minería y Canteras', keywords: [] },
+  { code: '0893.0', description: 'Extracción de sal', category: 'Minería y Canteras', keywords: [] },
+  { code: '1010.9', description: 'Elaboración y conservación de otro tipo de carnes n.c.p', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1020.0', description: 'Elaboración y conservación de pescados, crustáceos y moluscos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1040.0', description: 'Elaboración de aceites y grasas de origen vegetal y animal', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1061.1', description: 'Beneficio de arroz', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1062.0', description: 'Elaboración y productos derivados del almidón', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1104.0', description: 'Elaboración de bebidas no alcohólicas; producción de aguas minerales y embotelladas', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1200.0', description: 'Elaboración de productos de tabaco', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1312.0', description: 'Tejedura de productos textiles', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1391.0', description: 'Fabricación de tejidos de punto y ganchillo', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1392.0', description: 'Fabricación de artículos confeccionados con materiales textiles, excepto prendas de vestir', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1393.0', description: 'Fabricación de tapices y alfombras', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1511.0', description: 'Curtido y adobo de cueros; adobo y teñido de pieles', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1512.0', description: 'Fabricación de maletas, bolsos de mano y de artículos similares, y talabartería', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1520.0', description: 'Fabricación de calzado', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1610.0', description: 'Aserrado y acepilladura de madera', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1621.0', description: 'Fabricación de hojas de madera para enchapado y tableros a base de madera', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1701.0', description: 'Fabricación de pasta de madera, papel y cartón', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1709.0', description: 'Fabricación de otros artículos del papel y cartón', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1820.0', description: 'Reproducción de grabaciones', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2012.0', description: 'Fabricación abonos y compuestos de nitrógeno', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2021.0', description: 'Fabricación de plaguicidas y de otros productos químicos de uso agropecuario', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2023.2', description: 'Fabricación de perfumes y preparados de tocador', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2030.0', description: 'Fabricación de fibras artificiales', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2100.0', description: 'Fabricación de productos farmacéuticos, sustancias químicas medicinales y de productos botánicos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2219.0', description: 'Fabricación de otros productos de caucho', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2220.9', description: 'Fabricación de otros productos de plástico', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2310.0', description: 'Fabricación de vidrio y de productos de vidrio', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2391.0', description: 'Fabricación de productos refractarios', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2392.0', description: 'Fabricación de material de arcilla para la construcción', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2393.0', description: 'Fabricación de otros productos de cerámica y porcelana', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2395.0', description: 'Fabricación de artículos de hormigón, de cemento y de yeso', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2396.0', description: 'Corte, tallado y acabado de la piedra', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2399.0', description: 'Fabricación de otros productos minerales no metálicos n.c.p', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2410.0', description: 'Industrias básicas de hierro y acero', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2420.0', description: 'Fabricación de productos primarios de metales preciosos y metales no ferrosos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2431.0', description: 'Fundición de hierro y acero', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2432.0', description: 'Fundición de metales no ferrosos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2511.0', description: 'Fabricación de productos metálicos para uso estructural', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2512.0', description: 'Fabricación de tanques, depósitos y recipientes de metal', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2513.0', description: 'Fabricación de los generadores del vapor, excepto calderas de agua caliente', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2520.0', description: 'Fabricación de armas y municiones', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2630.0', description: 'Fabricación de equipos de comunicaciones', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2651.0', description: 'Fabricación de equipos de medición, prueba, verificación, navegación y de equipo de control', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2652.0', description: 'Fabricación de relojes', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2670.0', description: 'Fabricación de instrumentos ópticos de equipo fotográfico', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2720.0', description: 'Fabricación de baterias y acumuladores', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2732.0', description: 'Fabricación de otros hilos y cables eléctricos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2740.0', description: 'Fabricación de equipos de iluminación eléctricos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2750.0', description: 'Fabricación de aparatos de uso doméstico', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2790.0', description: 'Fabricación de otro equipo eléctrico', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2811.0', description: 'Fabricación de motores y turbinas, excepto motores para aeronaves y vehículos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2813.0', description: 'Fabricación de otras bombas, compresores, grifos y válvulas', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2815.0', description: 'Fabricación de hornos, hogueras y quemadores', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2817.0', description: 'Fabricación de maquinaria y equipo de oficina', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2821.0', description: 'Fabricación de maquinaria agropecuaria y forestal', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2822.0', description: 'Fabricación de maquinarias para la conformación de metales y de máquinas herramientas', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2823.0', description: 'Fabricación de maquinaria para metalúrgica', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2824.0', description: 'Fabricación de maquinaria para explotación de minas y canteras y para obras de construcción', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2825.0', description: 'Fabricación de maquinaria para la elaboración de alimentos, bebidas y tabaco', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2826.0', description: 'Fabricación de maquinaria para la elaboración de productos textiles, prendas de vestir y cueros', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2829.0', description: 'Fabricación de otros tipos de maquinaria de uso especial', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2910.0', description: 'Fabricación de vehículos automotores', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2930.0', description: 'Fabricación de partes y accesorios para motores de vehículos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3012.0', description: 'Construcción de embarcaciones de recreo y deporte', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3020.0', description: 'Fabricación de locomotoras y de material rodante', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3030.0', description: 'Fabricación de aeronaves y naves espaciales y de maquinaria conexa', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3091.0', description: 'Fabricación de motocicletas', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3092.0', description: 'Fabricación de bicicletas y sillas de ruedas para personas con discapacidad', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3099.0', description: 'Fabricación de otros tipos de equipo de transporte n.c.p', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3100.1', description: 'Fabricación de muebles de madera', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3100.9', description: 'Fabricación de muebles de otro tipo de material (excepto de madera, piedra, cemento o cerámica)', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3211.0', description: 'Fabricación de joyas y artículos conexos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3212.0', description: 'Fabricación de bisutería y artículos conexos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3220.0', description: 'Fabricación de Instrumentos musicales', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3230.0', description: 'Fabricación de artículos de deporte', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3240.0', description: 'Fabricación de juegos y juguetes', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3311.0', description: 'Reparación de productos elaborados de metal', category: 'Reparación e Instalación', keywords: [] },
+  { code: '3314.0', description: 'Reparación de equipo eléctrico', category: 'Reparación e Instalación', keywords: [] },
+  { code: '3315.0', description: 'Reparación de equipo de transporte, excepto los vehículos automotores', category: 'Reparación e Instalación', keywords: [] },
+  { code: '3510.0', description: 'Generación , transmisión y distribución de energía eléctrica', category: 'Servicios Públicos y Suministros', keywords: [] },
+  { code: '3520.0', description: 'Fabricación de gas; distribución de combustibles gaseosos por tuberías', category: 'Servicios Públicos y Suministros', keywords: [] },
+  { code: '3700.0', description: 'Evacuación de aguas residuales', category: 'Servicios Públicos y Suministros', keywords: [] },
+  { code: '3811.0', description: 'Recolección de desechos no peligrosos', category: 'Servicios Públicos y Suministros', keywords: [] },
+  { code: '4100.0', description: 'Construcción de edificios', category: 'Construcción', keywords: [] },
+  { code: '4210.0', description: 'Construcción de carreteras y vías férreas', category: 'Construcción', keywords: [] },
+  { code: '4311.0', description: 'Demolición', category: 'Construcción', keywords: [] },
+  { code: '4312.0', description: 'Preparación del terreno', category: 'Construcción', keywords: [] },
+  { code: '4610.0', description: 'Venta al por mayor a cambio de una retribución o por contrato', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4641.1', description: 'Venta al por mayor de productos textiles y prendas de vestir', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4649.1', description: 'Venta al por mayor de aparatos, artículos y equipo de uso doméstico', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4651.0', description: 'Venta al por mayor de computadoras, equipo informático periférico y programas informáticos', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4652.0', description: 'Venta al por mayor de equipo, partes y piezas electrónicas y de telecomunicaciones', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4662.0', description: 'Venta al por mayor de metales y de minerales metalíferos', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4669.1', description: 'Venta al por mayor de fertilizantes y productos agroquímicos', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4711.1', description: 'Venta al por menor en supermercados, almacenes y similares', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4719.1', description: 'Venta al por menor en tiendas por departamentos', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4719.9', description: 'Venta al por menor en bazares y otros establecimientos no especializados n.c.p', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4723.0', description: 'Venta al por menor de tabaco en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4742.0', description: 'Venta al por menor de equipo de audio y video en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4752.2', description: 'Venta al por menor de productos de vidrio en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4753.0', description: 'Venta al por menor de tapices, alfombras, cubrimientos para paredes y pisos en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4764.0', description: 'Venta al por menor de juegos y de juguetes en almacenes especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4771.2', description: 'Venta al por menor de zapatos en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4911.0', description: 'Transporte de pasajeros por ferrocarril', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '4921.0', description: 'Transporte terrestre de pasajeros del área urbana, suburbana por vía terrestre', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '4922.1', description: 'Transporte terrestre de estudiantes y de empleados', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '4922.3', description: 'Transporte terrestre no regular de pasajeros, en buses', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '4923.1', description: 'Transporte terrestre local e internacional de contenedores', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '4930.0', description: 'Transporte por tuberías', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5012.0', description: 'Transporte marítimo y de cabotaje de carga', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5120.0', description: 'Transporte de carga por vía aérea', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5210.0', description: 'Almacenamiento y depósito', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5221.1', description: 'Remolque y asistencia para vehículo destinado al transporte terrestre', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5221.9', description: 'Servicios de administración de carreteras, puentes y otros servicios auxiliares', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5224.0', description: 'Manipulación de carga', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5310.0', description: 'Servicios postales (Correo)', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5510.9', description: 'Otras actividades de alojamiento para estancias cortas n.c.p', category: 'Hoteles y Restaurantes', keywords: [] },
+  { code: '5590.0', description: 'Otras actividades de alojamientos', category: 'Hoteles y Restaurantes', keywords: [] },
+  { code: '5610.0', description: 'Actividades de restaurantes y de servicios móviles de comidas (Soda, cafetería, bar, restaurante)', category: 'Hoteles y Restaurantes', keywords: [] },
+  { code: '5621.0', description: 'Suministros de comidas por encargo (Catering y banquetes)', category: 'Hoteles y Restaurantes', keywords: [] },
+  { code: '5630.0', description: 'Actividades de servicio de bebidas (Bares, cantinas, tabernas)', category: 'Hoteles y Restaurantes', keywords: [] },
+  { code: '5811.0', description: 'Edición de libros', category: 'Información y Comunicación', keywords: [] },
+  { code: '5813.0', description: 'Edición de periódicos, diarios y revistas', category: 'Información y Comunicación', keywords: [] },
+  { code: '5911.0', description: 'Actividades de producción de películas cinematográficas, videos y programas de televisión', category: 'Información y Comunicación', keywords: [] },
+  { code: '5914.0', description: 'Actividades de proyección de películas', category: 'Información y Comunicación', keywords: [] },
+  { code: '5920.0', description: 'Actividades de grabación y publicación de grabaciones sonoras', category: 'Información y Comunicación', keywords: [] },
+  { code: '6120.0', description: 'Actividades de telecomunicaciones inalámbricas', category: 'Información y Comunicación', keywords: [] },
+  { code: '6190.1', description: 'Servicios de café internet', category: 'Información y Comunicación', keywords: [] },
+  { code: '6201.0', description: 'Actividades de programación informática', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '6202.0', description: 'Actividades de consultoría informática y gestión de instalaciones informáticas', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '6209.0', description: 'Otras actividades de la tecnología de información y servicio informáticos', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '6391.0', description: 'Actividades de agencias de noticias', category: 'Información y Comunicación', keywords: [] },
+  { code: '6411.0', description: 'Banca Central', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6420.0', description: 'Actividades de sociedades de cartera', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6491.0', description: 'Arrendamiento financiero', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6511.0', description: 'Seguros de vida', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6512.0', description: 'Seguros generales', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6611.0', description: 'Administración de mercados financieros', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6629.0', description: 'Otras actividades auxiliares de seguros y fondos de pensiones', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6820.0', description: 'Actividades inmobiliarias realizadas a cambio de una retribución o por contrata', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '7010.0', description: 'Actividades de oficinas principales', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7020.0', description: 'Actividades de consultoría en gestión', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7210.0', description: 'Investigaciones y desarrollo experimental en el campo de las ciencias naturales y la ingeniería', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7220.0', description: 'Investigación y desarrollo experimental en el campo de las ciencias sociales y las humanidades', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7710.1', description: 'Alquiler de automóviles sin conductor', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '7722.0', description: 'Alquiler de cintas de vídeo y discos', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '7830.0', description: 'Otras actividades de dotación de recursos humanos', category: 'Servicios Administrativos', keywords: [] },
+  { code: '7911.0', description: 'Actividades de agencias de viajes', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8110.0', description: 'Actividades combinadas de apoyo a instalaciones', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8121.0', description: 'Limpieza general de edificios', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8129.0', description: 'Otras actividades de limpieza de edificios e instalaciones industriales', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8130.0', description: 'Actividades de paisajismo y servicios de mantenimiento conexos', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8220.0', description: 'Actividades de centros de llamadas', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8292.0', description: 'Actividades de envasado y empacado', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8299.0', description: 'Otras actividades de servicios de apoyo a las empresas n.c.p', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8421.0', description: 'Relaciones exteriores', category: 'Administración Pública', keywords: [] },
+  { code: '8430.0', description: 'Actividades de planes de seguridad social de afiliación obligatoria', category: 'Administración Pública', keywords: [] },
+  { code: '8522.0', description: 'Enseñanza de formación técnica y profesional', category: 'Educación', keywords: [] },
+  { code: '8530.2', description: 'Enseñanza parauniversitaria', category: 'Educación', keywords: [] },
+  { code: '8620.2', description: 'Actividades de odontólogos', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '8720.0', description: 'Actividades de atención en instituciones para personas con retraso mental, enfermos mentales y toxicómanos', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '8810.0', description: 'Asistencia social sin alojamiento para el adulto mayor y personas con discapacidad', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '9101.0', description: 'Actividades de Bibliotecas y archivos', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9102.0', description: 'Actividades de museos y preservación de lugares históricos', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9103.0', description: 'Actividades de jardines botánicos, zoológicos y parques naturales', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9412.0', description: 'Actividades de asociaciones profesionales', category: 'Otras Actividades y Asociaciones', keywords: [] },
+  { code: '9491.0', description: 'Actividades de organizaciones religiosas', category: 'Otras Actividades y Asociaciones', keywords: [] },
+  { code: '9492.0', description: 'Actividades de organizaciones políticas', category: 'Otras Actividades y Asociaciones', keywords: [] },
+  { code: '9512.0', description: 'Reparación de equipos de comunicaciones', category: 'Reparación e Instalación', keywords: [] },
+  { code: '9521.0', description: 'Reparación de aparatos electrónicos de consumo eléctrico', category: 'Reparación e Instalación', keywords: [] },
+  { code: '9522.0', description: 'Reparación de aparatos de uso doméstico y equipo doméstico y de jardinería', category: 'Reparación e Instalación', keywords: [] },
+  { code: '9523.0', description: 'Reparación de calzado y artículos de cuero', category: 'Reparación e Instalación', keywords: [] },
+  { code: '9602.0', description: 'Actividades de peluquería y otros tratamientos de belleza', category: 'Otras Actividades y Servicios', keywords: [] },
+  { code: '9700.0', description: 'Actividades de los hogares como empleadores de personal doméstico', category: 'Otras Actividades y Servicios', keywords: [] },
+  { code: '0111.9', description: 'Cultivo de otros cereales, legumbres y semillas oleaginosas n.c.p', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0113.9', description: 'Cultivo de otras hortalizas, raíces o tubérculos n.c.p', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0127.9', description: 'Cultivo de otras plantas con las que se preparan bebidas, excepto el cultivo de café n.c.p', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0146.9', description: 'Cría de otras aves de corral, excepto pollos', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0161.2', description: 'Servicios de fumigación y riego agrícola', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0161.9', description: 'Otros servicios de apoyo a la agricultura', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0210.0', description: 'Silvicultura y otras actividades forestales', category: 'Silvicultura y Pesca', keywords: [] },
+  { code: '0899.0', description: 'Explotación de otras minas y canteras n.c.p', category: 'Minería y Canteras', keywords: [] },
+  { code: '1030.0', description: 'Elaboración y conservación de frutas, legumbres y hortalizas (vegetales)', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1050.0', description: 'Elaboración de productos lácteos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1061.9', description: 'Elaboración de productos de molinería excepto arroz', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1072.0', description: 'Elaboración de azúcar y otros productos derivados de la caña de azúcar', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1073.0', description: 'Elaboración de cacao, chocolate y productos de confitería', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1074.0', description: 'Elaboración de macarrones, fideos, alcuzcuz y productos farináceos similares', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1079.9', description: 'Elaboración de otros productos alimenticios n.c.p', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1080.0', description: 'Elaboración de alimentos preparados para animales', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1313.0', description: 'Acabado de productos textiles', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1394.0', description: 'Fabricación de cuerdas, cordeles, bramantes y redes', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1410.9', description: 'Fabricación de otras prendas de vestir, excepto ropa interior y prendas de piel', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1622.0', description: 'Fabricación de partes y piezas de carpintería para edificios y construcciones', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2011.0', description: 'Fabricación de sustancias químicas básicas', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2013.0', description: 'Fabricación de plásticos y de caucho sintético en formas primarias', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2022.0', description: 'Fabricación de pinturas, barnices y productos de revestimiento similares, tintas de imprenta y masillas', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2029.0', description: 'Fabricación de otros productos químicos n.c.p', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2211.0', description: 'Fabricación de cubiertas y cámaras de caucho; recauchutado y renovación de cubiertas de caucho', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2394.0', description: 'Fabricación de cemento, de la cal y del yeso', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2592.0', description: 'Tratamiento y revestimiento de metales', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2599.0', description: 'Fabricación de otros productos de metal n.c.p', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2610.0', description: 'Fabricación de componentes y tableros electrónicos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2710.0', description: 'Fabricación de motores eléctricos, generadores, transformadores eléctricos y aparatos de distribución y control', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2920.0', description: 'Fabricación de carrocerias para vehículos automotores; fabricación de remolques y semiremolques', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3250.0', description: 'Fabricación de instrumentos y suministros médicos y odontológicos', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3290.0', description: 'Otras industrias manufactureras n.c.p', category: 'Industria Manufacturera', keywords: [] },
+  { code: '3312.0', description: 'Reparación de maquinaria', category: 'Reparación e Instalación', keywords: [] },
+  { code: '3530.0', description: 'Suministro de vapor y aire acondicionado', category: 'Servicios Públicos y Suministros', keywords: [] },
+  { code: '3600.0', description: 'Captación, tratamiento y distribución de agua', category: 'Servicios Públicos y Suministros', keywords: [] },
+  { code: '3830.0', description: 'Recuperación de materiales', category: 'Servicios Públicos y Suministros', keywords: [] },
+  { code: '4321.0', description: 'Instalación eléctrica y de telecomunicaciones', category: 'Construcción', keywords: [] },
+  { code: '4322.0', description: 'Instalación de fontanería e instalación de calefacción y aire acondicionado', category: 'Construcción', keywords: [] },
+  { code: '4329.0', description: 'Otro tipo de instalaciones de construcción', category: 'Construcción', keywords: [] },
+  { code: '4330.0', description: 'Terminación y acabados de edificios', category: 'Construcción', keywords: [] },
+  { code: '4390.0', description: 'Otras actividades especializadas de la construcción', category: 'Construcción', keywords: [] },
+  { code: '4510.0', description: 'Venta de vehículos automotores', category: 'Comercio al por Mayor y Menor', keywords: [] },
+  { code: '4520.0', description: 'Mantenimiento y reparación de vehículos automotores', category: 'Reparación e Instalación', keywords: [] },
+  { code: '4530.0', description: 'Venta de partes, piezas y accesorios de vehículos automotores', category: 'Comercio al por Mayor y Menor', keywords: [] },
+  { code: '4540.0', description: 'Venta, mantenimiento y reparación de motocicletas y de sus partes, piezas y accesorios', category: 'Comercio al por Mayor y Menor', keywords: [] },
+  { code: '4620.0', description: 'Venta al por mayor de materias primas agropecuarias y animales vivos', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4630.3', description: 'Venta al por mayor de frutas y verduras frescas', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4630.4', description: 'Venta al por mayor de licores, bebidas y tabaco', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4630.9', description: 'Venta al por mayor de otros alimentos', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4649.2', description: 'Venta al por mayor de productos farmacéuticos, veterinarios y artículos de tocador', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4649.3', description: 'Venta al por mayor de juegos, juguetes, artículos deportivos y de esparcimiento', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4649.9', description: 'Venta al por mayor de otros enseres domésticos n.c.p', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4653.0', description: 'Venta al por mayor de maquinaria, equipo y materiales agropecuarios', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4659.0', description: 'Venta al por mayor de otro tipo de maquinaria y equipo', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4661.0', description: 'Venta al por mayor de combustibles sólidos, líquidos y gaseosos y de productos conexos', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4663.0', description: 'Venta al por mayor de materiales de construcción, articulos de ferretería y equipo y materiales de fontanería y calefacción', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4669.9', description: 'Venta al por mayor de basura, desechos y otros productos n.c.p', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4690.0', description: 'Venta al por mayor de otros productos no especializada', category: 'Comercio al por Mayor', keywords: [] },
+  { code: '4711.2', description: 'Venta al por menor en minisuper, pulperias y similares', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4721.1', description: 'Venta al por menor de carne de bovino, porcino y sus derivados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4721.3', description: 'Venta al por menor de pescados y mariscos', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4721.4', description: 'Venta al por menor de frutas y verduras frescas', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4721.9', description: 'Venta al por menor de otros alimentos', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4722.0', description: 'Venta al por menor de bebidas en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4730.0', description: 'Venta al por menor de combustibles para vehículos automotores en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4741.0', description: 'Venta al por menor de computadoras, equipo periféricos, programas de información y telecomunicaciones en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4751.0', description: 'Venta al por menor de productos textiles en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4752.1', description: 'Venta al por menor de artículos de ferretería y pinturas en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4759.0', description: 'Venta al por menor de aparatos eléctricos de uso doméstico, muebles, equipos de iluminación y otros enseres domésticos', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4761.0', description: 'Venta al por menor de libros, periódicos y artículos de papelería en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4762.0', description: 'Venta al por menor de grabaciones musicales y videográficas en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4763.0', description: 'Venta al por menor de artículos de deporte en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4771.1', description: 'Venta al por menor de prendas de vestir y artículos de cuero en almacenes especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4772.0', description: 'Venta al por menor de productos farmacéuticos y medicinales, cosméticos y artículos de tocador en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4773.0', description: 'Otra venta al por menor de otros productos nuevos en comercios especializados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4774.0', description: 'Venta al por menor de artículos de segunda mano', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4781.0', description: 'Venta al por menor en puestos de venta y mercados de: alimentos, bebidas y de productos del tabaco', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4799.0', description: 'Otros tipos de venta al por menor no realizada en comercios, puestos de venta o mercados', category: 'Comercio al por Menor', keywords: [] },
+  { code: '4922.2', description: 'Servicios de taxi (Transporte terrestre remunerado de personas)', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '4923.9', description: 'Otro transporte de carga n.c.p', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5110.0', description: 'Transporte de pasajeros por vía aérea', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5221.2', description: 'Servicios de estacionamientos y garajes', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5223.0', description: 'Actividades de servicio secundario de transporte por vía aérea', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5229.0', description: 'Otras actividades de apoyo al transporte', category: 'Transporte y Almacenamiento', keywords: [] },
+  { code: '5510.1', description: 'Actividades de alojamiento para estancias cortas en hoteles y moteles', category: 'Hoteles y Restaurantes', keywords: [] },
+  { code: '6010.0', description: 'Transmisiones de radio', category: 'Información y Comunicación', keywords: [] },
+  { code: '6020.0', description: 'Programación y transmisión de televisión', category: 'Información y Comunicación', keywords: [] },
+  { code: '6110.0', description: 'Actividades de telecomunicaciones alámbricas', category: 'Información y Comunicación', keywords: [] },
+  { code: '6190.9', description: 'Otras actividades de telecomunicación', category: 'Información y Comunicación', keywords: [] },
+  { code: '6311.0', description: 'Procesamiento de datos, hospedaje y actividades conexas', category: 'Información y Comunicación', keywords: [] },
+  { code: '6419.0', description: 'Otros tipos de intermediación monetaria (Bancos y Cooperativas)', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6430.0', description: 'Fondo y sociedades de Inversión y entidades financieras similares', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6492.0', description: 'Otros tipos de crédito (Tarjetas, préstamos, casas de empeño)', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6499.0', description: 'Otras actividades de servicios financiero, excepto las de seguros y fondos de pensiones n.c.p', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6530.0', description: 'Fondos de pensión', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6612.0', description: 'Corretaje de valores y de contratos de productos básicos', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6619.0', description: 'Otras actividades auxiliares a las actividades de servicios financieros', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6622.0', description: 'Actividades de agentes y corredores de seguro', category: 'Financiero y Seguros', keywords: [] },
+  { code: '6810.0', description: 'Actividades inmobiliarias con bienes propios o arrendados', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '6910.0', description: 'Actividades jurídicas (Abogados, Notarios)', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '6920.0', description: 'Actividades de contabilidad, teneduría de libros y auditorías; consultoría fiscal (Contador)', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7110.0', description: 'Actividades de arquitectura e ingeniería y actividades conexas de consultoría técnica', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7120.0', description: 'Ensayos y análisis técnicos (Revisión técnica vehicular, químicos)', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7310.0', description: 'Publicidad y alquiler de espacios publicitarios', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7320.0', description: 'Estudios de mercados y encuestas de opinión pública', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7410.0', description: 'Actividades especializadas de diseño y artes gráficas', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7420.0', description: 'Actividades de fotografía', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7490.0', description: 'Otras actividades profesionales, científicas y técnicas n.c.p.', category: 'Servicios Profesionales y TI', keywords: [] },
+  { code: '7500.0', description: 'Actividades veterinarias', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '7721.0', description: 'Alquiler y arrendamiento de equipo recreativo y deportivo', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '7729.0', description: 'Alquiler y arrendamiento de otros efectos personales y enseres domésticos', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '7730.0', description: 'Alquiler y arrendamiento de otros tipo de maquinaria, equipo y bienes tangibles', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '7740.0', description: 'Arrendamiento de propiedad intelectual y productos similares excepto obras protegidas por derechos de autor', category: 'Inmobiliaria y Alquiler', keywords: [] },
+  { code: '7912.0', description: 'Actividades de operadores turísticos', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8010.0', description: 'Actividades de seguridad privada', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8219.0', description: 'Fotocopiado, preparación de documentos y otras actividades especializadas de apoyo de oficina', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8291.0', description: 'Actividades de agencias de cobro y agencias de calificación crediticia', category: 'Servicios Administrativos', keywords: [] },
+  { code: '8411.0', description: 'Actividades de la administración pública en general', category: 'Administración Pública', keywords: [] },
+  { code: '8413.0', description: 'Regulación y facilitación de la actividad económica', category: 'Administración Pública', keywords: [] },
+  { code: '8423.0', description: 'Actividades de mantenimiento del orden público y de seguridad', category: 'Administración Pública', keywords: [] },
+  { code: '8510.0', description: 'Enseñanza preescolar y primaria', category: 'Educación', keywords: [] },
+  { code: '8521.0', description: 'Enseñanza secundaria de formación general', category: 'Educación', keywords: [] },
+  { code: '8530.1', description: 'Enseñanza universitaria', category: 'Educación', keywords: [] },
+  { code: '8541.0', description: 'Educación deportiva y recreativa', category: 'Educación', keywords: [] },
+  { code: '8542.0', description: 'Educación cultural', category: 'Educación', keywords: [] },
+  { code: '8549.0', description: 'Otros tipos de enseñanza n.c.p', category: 'Educación', keywords: [] },
+  { code: '8550.0', description: 'Actividades de apoyo a la enseñanza (Terapia de lenguaje)', category: 'Educación', keywords: [] },
+  { code: '8610.0', description: 'Actividades de hospitales', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '8620.1', description: 'Actividades de médicos (Medicina general, especialistas)', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '8690.1', description: 'Laboratorios médicos y de diagnóstico', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '8690.9', description: 'Otras actividades relacionadas con la salud humana (Fisioterapia, psicología, nutrición, enfermería)', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '8790.0', description: 'Otras actividades de atención en instituciones n.c.p', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '8890.0', description: 'Otras actividades de asistencia social sin alojamiento n.c.p', category: 'Salud y Asistencia Social', keywords: [] },
+  { code: '9000.0', description: 'Actividades creativas, artísticas y de entretenimiento', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9200.0', description: 'Actividades de juego de azar y apuestas', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9311.0', description: 'Gestión de instalaciones deportivas', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9319.0', description: 'Otras actividades deportivas', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9329.0', description: 'Otras actividades de esparcimiento y recreativas n.c.p (Salas de baile, billar, videojuegos)', category: 'Artes, Entretenimiento y Recreación', keywords: [] },
+  { code: '9411.0', description: 'Actividades de Asociaciones empresariales y de empleadores', category: 'Otras Actividades y Asociaciones', keywords: [] },
+  { code: '9420.0', description: 'Actividades de sindicatos', category: 'Otras Actividades y Asociaciones', keywords: [] },
+  { code: '9499.0', description: 'Actividades de otras asociaciones n.c.p (Asociaciones comunales, clubes sociales)', category: 'Otras Actividades y Asociaciones', keywords: [] },
+  { code: '9511.0', description: 'Reparación de computadoras y equipo periférico', category: 'Reparación e Instalación', keywords: [] },
+  { code: '9524.0', description: 'Reparación de muebles y accesorios domésticos', category: 'Reparación e Instalación', keywords: [] },
+  { code: '9529.0', description: 'Reparación de otros bienes personales y enseres domésticos n.c.p (Joyería, bicicletas)', category: 'Reparación e Instalación', keywords: [] },
+  { code: '9601.0', description: 'Lavado y limpieza, incluida la limpieza en seco, de productos textiles y piel', category: 'Otras Actividades y Servicios', keywords: [] },
+  { code: '9603.0', description: 'Funerales y actividades conexas (Servicios fúnebres, cementerios)', category: 'Otras Actividades y Servicios', keywords: [] },
+  { code: '9609.0', description: 'Otras actividades de servicios personales n.c.p (Masajes, estética animal, tatuaje)', category: 'Otras Actividades y Servicios', keywords: [] },
+  { code: '9900.0', description: 'Actividades de organizaciones y órganos extraterritoriales (Embajadas)', category: 'Otras Actividades y Servicios', keywords: [] },
+  { code: '0130.0', description: 'Propagación de plantas (Viveros y césped)', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0149.0', description: 'Cría de otros animales (Apicultura, mariposas)', category: 'Agricultura y Ganadería', keywords: [] },
+  { code: '0311.0', description: 'Pesca marítima (Artesanal y de gran escala)', category: 'Silvicultura y Pesca', keywords: [] },
+  { code: '1010.1', description: 'Elaboración y conservación de carne y embutidos de ganado vacuno y porcino', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1071.9', description: 'Elaboración de otros productos de panadería, excepto elaboración de galletas (Panaderías, pastelerías)', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1101.0', description: 'Destilación, rectificación y mezcla de bebidas alcohólicas (Licores)', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1103.0', description: 'Elaboración de bebidas malteadas y de malta (Cerveza artesanal e industrial)', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1811.0', description: 'Impresión (Imprenta, serigrafía, sublimación)', category: 'Industria Manufacturera', keywords: [] },
+  { code: '1920.0', description: 'Fabricación de los productos de la refinación del petróleo', category: 'Industria Manufacturera', keywords: [] },
+  { code: '2023.1', description: 'Fabricación de jabones y detergentes, preparados para limpiar y pulir', category: 'Industria Manufacturera', keywords: [] },
+  { code: '0000.1', description: 'Preoperativa', category: 'Especiales', keywords: [] },
+  { code: '0000.2', description: 'Servicios digitales o de telecomunicaciones e intangibles prestados desde el exterior por proveedores', category: 'Especiales', keywords: [] },
+  { code: '0000.3', description: 'Servicios digitales o de telecomunicaciones e intangibles prestados desde el exterior por intermediarios', category: 'Especiales', keywords: [] },
+];
+
+export const OFFICIAL_ECONOMIC_ACTIVITIES = HACIENDA_ECONOMIC_ACTIVITIES;
 
 export const ECONOMIC_ACTIVITY_CATEGORIES = [
   'Todos',
-  'Restaurantes & Comidas',
-  'Comercio & Tiendas',
-  'Transporte & Envíos',
-  'Servicios Profesionales',
-  'Servicios Técnicos',
+  'Hoteles y Restaurantes',
+  'Comercio al por Menor',
+  'Comercio al por Mayor',
+  'Servicios Profesionales y TI',
+  'Salud y Asistencia Social',
+  'Industria Manufacturera',
   'Construcción',
-  'Salud & Belleza',
-  'Educación'
+  'Transporte y Almacenamiento',
+  'Agricultura y Ganadería',
+  'Educación',
+  'Financiero y Seguros',
+  'Reparación e Instalación',
+  'Inmobiliaria y Alquiler',
+  'Servicios Administrativos',
+  'Artes, Entretenimiento y Recreación',
+  'Otras Actividades y Servicios',
+  'Especiales'
 ];
 
 /**
- * Actividades Económicas registradas en Hacienda para el Emisor "Pollo Frito Sabor Cervanteño"
+ * Busca actividades económicas por código o descripción
  */
-export const OFFICIAL_ECONOMIC_ACTIVITIES: EconomicActivity[] = [
-  {
-    code: '5610.0',
-    description: 'Actividades de restaurantes y de servicio móvil de comidas (Pollo Frito, Comidas Rápidas)',
-    main: true,
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '561001',
-    description: 'Actividades de restaurantes y de servicio móvil de comidas',
-    main: false,
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '561002',
-    description: 'Servicio de entrega de comida a domicilio (Delivery / Express)',
-    main: false,
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '562900',
-    description: 'Otras actividades de servicio de comidas y bebidas preparadas',
-    main: false,
-    category: 'Restaurantes & Comidas'
+export function searchEconomicActivities(
+  query: string, 
+  arg2?: number | string, 
+  arg3?: number | string
+): EconomicActivity[] {
+  const cleanQuery = query ? query.trim().toLowerCase() : '';
+  
+  let limit = 20;
+  let category = 'Todos';
+
+  if (typeof arg2 === 'number') {
+    limit = arg2;
+    if (typeof arg3 === 'string') category = arg3;
+  } else if (typeof arg2 === 'string') {
+    category = arg2;
+    if (typeof arg3 === 'number') limit = arg3;
   }
-];
-
-export const HACIENDA_ECONOMIC_ACTIVITIES: EconomicActivity[] = [
-  // Restaurantes & Alimentos
-  {
-    code: '5610.0',
-    description: 'Actividades de restaurantes y de servicio móvil de comidas',
-    main: true,
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '561001',
-    description: 'Actividades de restaurantes y sodas tradicionales',
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '561002',
-    description: 'Servicio de entrega de comida a domicilio (Delivery / Express)',
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '562100',
-    description: 'Suministro de comidas por encargo (Catering service)',
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '562900',
-    description: 'Otras actividades de servicio de comidas preparadas',
-    category: 'Restaurantes & Comidas'
-  },
-  {
-    code: '563000',
-    description: 'Actividades de servicio de bebidas (Bares, Cafeterías)',
-    category: 'Restaurantes & Comidas'
-  },
-
-  // Comercio
-  {
-    code: '471100',
-    description: 'Venta al por menor en comercios no especializados (Supermercados, Minisúper, Pulperías)',
-    category: 'Comercio & Tiendas'
-  },
-  {
-    code: '472100',
-    description: 'Venta al por menor de alimentos en comercios especializados (Carnicerías, Verdulerías)',
-    category: 'Comercio & Tiendas'
-  },
-  {
-    code: '472200',
-    description: 'Venta al por menor de bebidas en comercios especializados',
-    category: 'Comercio & Tiendas'
-  },
-  {
-    code: '477100',
-    description: 'Venta al por menor de prendas de vestir y calzado',
-    category: 'Comercio & Tiendas'
-  },
-  {
-    code: '477200',
-    description: 'Venta al por menor de productos farmacéuticos y medicinales',
-    category: 'Comercio & Tiendas'
-  },
-  {
-    code: '477300',
-    description: 'Venta al por menor de otros productos en almacenes y tiendas',
-    category: 'Comercio & Tiendas'
-  },
-
-  // Transporte
-  {
-    code: '4921.0',
-    description: 'Transporte urbano y suburbano de pasajeros (Autobuses, Busetas)',
-    category: 'Transporte & Envíos'
-  },
-  {
-    code: '492200',
-    description: 'Otras actividades de transporte de pasajeros por vía terrestre (Taxis, Servicios especiales)',
-    category: 'Transporte & Envíos'
-  },
-  {
-    code: '492300',
-    description: 'Transporte de carga por carretera (Camiones, Fletes)',
-    category: 'Transporte & Envíos'
-  },
-  {
-    code: '532000',
-    description: 'Actividades de mensajería y entrega a domicilio express',
-    category: 'Transporte & Envíos'
-  },
-
-  // Servicios Profesionales
-  {
-    code: '691000',
-    description: 'Actividades jurídicas y legales (Abogados, Notarios)',
-    category: 'Servicios Profesionales'
-  },
-  {
-    code: '692000',
-    description: 'Actividades de contabilidad, teneduría de libros y auditoría (Contadores)',
-    category: 'Servicios Profesionales'
-  },
-  {
-    code: '711000',
-    description: 'Servicios de arquitectura e ingeniería (Ingenieros, Arquitectos)',
-    category: 'Servicios Profesionales'
-  },
-  {
-    code: '620101',
-    description: 'Desarrollo de software y aplicaciones informáticas',
-    category: 'Servicios Profesionales'
-  },
-  {
-    code: '620200',
-    description: 'Consultoría informática y gestión de instalaciones informáticas',
-    category: 'Servicios Profesionales'
-  },
-  {
-    code: '702000',
-    description: 'Actividades de consultoría de gestión empresarial y administración',
-    category: 'Servicios Profesionales'
-  },
-  {
-    code: '731000',
-    description: 'Publicidad y mercadeo digital',
-    category: 'Servicios Profesionales'
-  },
-
-  // Servicios Técnicos & Mantenimiento
-  {
-    code: '432100',
-    description: 'Instalaciones eléctricas y mantenimiento',
-    category: 'Servicios Técnicos'
-  },
-  {
-    code: '432200',
-    description: 'Fontanería, calefacción y aire acondicionado',
-    category: 'Servicios Técnicos'
-  },
-  {
-    code: '452000',
-    description: 'Mantenimiento y reparación de vehículos de motor (Talleres mecánicos)',
-    category: 'Servicios Técnicos'
-  },
-  {
-    code: '951100',
-    description: 'Reparación de computadoras y equipos de comunicación',
-    category: 'Servicios Técnicos'
-  },
-  {
-    code: '952200',
-    description: 'Reparación de electrodomésticos y equipos para el hogar',
-    category: 'Servicios Técnicos'
-  },
-
-  // Construcción
-  {
-    code: '410000',
-    description: 'Construcción de edificios y casas',
-    category: 'Construcción'
-  },
-  {
-    code: '433000',
-    description: 'Terminación y acabado de edificios (Pintura, Pisos)',
-    category: 'Construcción'
-  },
-
-  // Salud & Belleza
-  {
-    code: '862000',
-    description: 'Actividades de médicos y odontólogos (Clínicas, Consultorios)',
-    category: 'Salud & Belleza'
-  },
-  {
-    code: '960200',
-    description: 'Peluquería y otros tratamientos de belleza (Salones, Barberías)',
-    category: 'Salud & Belleza'
-  },
-
-  // Educación
-  {
-    code: '851000',
-    description: 'Enseñanza preescolar y primaria',
-    category: 'Educación'
-  },
-  {
-    code: '854900',
-    description: 'Otros tipos de enseñanza y academias de capacitación',
-    category: 'Educación'
-  },
-
-  // Consumidor final / Despacho
-  {
-    code: '2022.0',
-    description: 'Consumidor final / Actividad genérica receptor',
-    category: 'Restaurantes & Comidas'
-  }
-];
-
-export function getEconomicActivityByCode(code: string): EconomicActivity | undefined {
-  if (!code) return undefined;
-  const cleanCode = code.trim();
-  return (
-    HACIENDA_ECONOMIC_ACTIVITIES.find(a => a.code === cleanCode) ||
-    OFFICIAL_ECONOMIC_ACTIVITIES.find(a => a.code === cleanCode) ||
-    HACIENDA_ECONOMIC_ACTIVITIES.find(a => a.code.replace('.', '') === cleanCode.replace('.', ''))
-  );
+  
+  return HACIENDA_ECONOMIC_ACTIVITIES.filter(activity => {
+    // Filtro por categoría
+    if (category !== 'Todos' && activity.category !== category) {
+      return false;
+    }
+    
+    // Si no hay búsqueda de texto/código, retornar true si coincide categoría
+    if (!cleanQuery) return true;
+    
+    // Coincidencia exacta o parcial de código (ignora puntos para conveniencia)
+    const normalizedCode = activity.code.replace('.', '');
+    const normalizedQuery = cleanQuery.replace('.', '');
+    
+    if (activity.code.toLowerCase().includes(cleanQuery) || normalizedCode.includes(normalizedQuery)) {
+      return true;
+    }
+    
+    // Coincidencia en descripción
+    if (activity.description.toLowerCase().includes(cleanQuery)) {
+      return true;
+    }
+    
+    // Coincidencia en keywords
+    if (activity.keywords && activity.keywords.some(k => k.toLowerCase().includes(cleanQuery))) {
+      return true;
+    }
+    
+    return false;
+  }).slice(0, limit);
 }
 
-export function searchEconomicActivities(
-  query: string,
-  maxResults: number = 25,
-  category: string = 'Todos'
-): EconomicActivity[] {
-  let list = HACIENDA_ECONOMIC_ACTIVITIES;
-  if (category && category !== 'Todos') {
-    list = list.filter(a => a.category === category);
-  }
-
-  if (!query || !query.trim()) {
-    return list.slice(0, maxResults);
-  }
-
-  const q = query.toLowerCase().trim();
-  const qClean = q.replace(/[^\d]/g, '');
-
-  return list
-    .filter(a => {
-      const matchText = a.description.toLowerCase().includes(q);
-      const matchCode = a.code.toLowerCase().includes(q) || (qClean.length > 0 && a.code.replace(/[^\d]/g, '').includes(qClean));
-      return matchText || matchCode;
-    })
-    .slice(0, maxResults);
+/**
+ * Obtiene la información oficial de una actividad por su código
+ */
+export function getEconomicActivityByCode(code: string): EconomicActivity | undefined {
+  if (!code) return undefined;
+  const clean = code.trim();
+  return HACIENDA_ECONOMIC_ACTIVITIES.find(a => 
+    a.code === clean || a.code.replace('.', '') === clean.replace('.', '')
+  );
 }

@@ -4,3 +4,10 @@ dist/
 backups/
 *.bak
 *.backup*
+*.p12
+*.b64
+.env*
+pos_database*.json
+*backup*.json
+sales_archive.json
+

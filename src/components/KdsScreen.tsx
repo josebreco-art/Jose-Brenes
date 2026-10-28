@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Clock, 
   CheckCircle2, 
@@ -15,15 +15,19 @@ import {
   Layers,
   Coffee,
   Sparkles,
-  Printer
+  Printer,
+  Bell
 } from 'lucide-react';
 import { Sale, KitchenOrder, OrderStatus, KitchenStation } from '../types/pos';
 import { getCostaRicaDate } from '../utils/dateUtils';
+import { playOrderChime } from '../utils/audioChime';
 
 interface KdsScreenProps {
   sales: Array<Sale | KitchenOrder>;
   onUpdateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   onPrintOrder?: (order: Sale | KitchenOrder) => void;
+  chimeOnlyInKitchen?: boolean;
+  onToggleChimeOnlyInKitchen?: () => void;
 }
 
 const STATIONS: { id: KitchenStation; name: string; icon: any; color: string; desc: string }[] = [
@@ -37,7 +41,9 @@ const STATIONS: { id: KitchenStation; name: string; icon: any; color: string; de
 export const KdsScreen: React.FC<KdsScreenProps> = ({
   sales,
   onUpdateOrderStatus,
-  onPrintOrder
+  onPrintOrder,
+  chimeOnlyInKitchen = true,
+  onToggleChimeOnlyInKitchen
 }) => {
   // Monitor de Cocina Unificado (General / Todo)
   const activeStation = 'ALL';
@@ -71,54 +77,40 @@ export const KdsScreen: React.FC<KdsScreenProps> = ({
     setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Chronological sorting: oldest order first (left to right)
-  const sortedSales = [...sales].sort((a, b) => {
-    const timeA = a.timestamp || new Date(a.createdAt || 0).getTime();
-    const timeB = b.timestamp || new Date(b.createdAt || 0).getTime();
-    return timeA - timeB;
-  });
-
-  // Filter orders by:
-  // 1. Fecha del día o pedidos activos de las últimas 18 horas (evita descartes por desfase de reloj)
-  // 2. Delivery/archive status
-  // 3. Dine-in / Take-out / Express filter
-  // 4. Station Monitor filtering
-  const today = getCostaRicaDate();
-  const now = Date.now();
-  const displayedSales = sortedSales.filter(s => {
-    if (!s) return false;
-
-    // Regla de fecha: Solo mostrar comandas correspondientes a la fecha de hoy o últimas 18 horas si están activas
-    const orderDate = s.timestamp 
-      ? getCostaRicaDate(s.timestamp) 
-      : (s.date || (s.createdAt ? getCostaRicaDate(s.createdAt) : ''));
-    const orderTime = s.timestamp || new Date(s.createdAt || 0).getTime();
-    const isRecent = orderTime && (now - orderTime) < 18 * 60 * 60 * 1000;
-
-    if (orderDate && orderDate !== today && !isRecent) return false;
-
-    const currentStatus = localStatusOverrides[s.id] || s.orderStatus;
-
-    if (currentStatus === 'CANCELLED') return false;
-    
-    if (!viewArchived && currentStatus === 'DELIVERED') return false;
-    if (viewArchived && currentStatus !== 'DELIVERED') return false;
-
-    // Filter by order type tab
-    if (activeFilter !== 'ALL' && s.orderType !== activeFilter) return false;
-
-    // Filter by kitchen station monitor
-    if (activeStation === 'ALL') return true;
-    if (activeStation === 'EXPRESS_DESPACHO') {
-      return s.orderType === 'DELIVERY' || s.orderType === 'TAKE_OUT';
-    }
-
-    // Check if this sale has items matching the station
-    return s.items.some(item => {
-      const itemStation = item.station || 'PLANCHA_ARMADO';
-      return itemStation === activeStation || itemStation === 'ALL';
+  // Chronological sorting and filtering memoized to prevent screen flash/jitter
+  const displayedSales = useMemo(() => {
+    const sorted = [...sales].sort((a, b) => {
+      const timeA = a.timestamp || new Date(a.createdAt || 0).getTime();
+      const timeB = b.timestamp || new Date(b.createdAt || 0).getTime();
+      return timeA - timeB;
     });
-  });
+
+    return sorted.filter(s => {
+      if (!s) return false;
+
+      const currentStatus = localStatusOverrides[s.id] || s.orderStatus;
+
+      if (currentStatus === 'CANCELLED') return false;
+      
+      if (!viewArchived && currentStatus === 'DELIVERED') return false;
+      if (viewArchived && currentStatus !== 'DELIVERED') return false;
+
+      // Filter by order type tab
+      if (activeFilter !== 'ALL' && s.orderType !== activeFilter) return false;
+
+      // Filter by kitchen station monitor
+      if (activeStation === 'ALL') return true;
+      if (activeStation === 'EXPRESS_DESPACHO') {
+        return s.orderType === 'DELIVERY' || s.orderType === 'TAKE_OUT';
+      }
+
+      // Check if this sale has items matching the station
+      return s.items.some(item => {
+        const itemStation = item.station || 'PLANCHA_ARMADO';
+        return itemStation === activeStation || itemStation === 'ALL';
+      });
+    });
+  }, [sales, localStatusOverrides, viewArchived, activeFilter]);
 
   // Color schemes requested:
   // - ROJO: COMER ACÁ (DINE_IN)
@@ -237,6 +229,35 @@ export const KdsScreen: React.FC<KdsScreenProps> = ({
             </button>
           </div>
 
+          {/* Sound Chime Toggle & Test */}
+          <div className="flex items-center gap-1">
+            {onToggleChimeOnlyInKitchen && (
+              <button
+                id="kds-chime-scope-toggle"
+                onClick={onToggleChimeOnlyInKitchen}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 ${
+                  chimeOnlyInKitchen
+                    ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900'
+                    : 'bg-stone-900 border-stone-700 text-stone-300 hover:bg-stone-800'
+                }`}
+                title={chimeOnlyInKitchen ? "Campana configurada para sonar SOLAMENTE cuando estás en la pantalla de Cocina (KDS). Clic para permitir en todas las pantallas." : "Campana sonando en todas las pantallas. Clic para restringir solo a Cocina."}
+              >
+                <span className={`w-2 h-2 rounded-full ${chimeOnlyInKitchen ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                <span className="hidden md:inline">{chimeOnlyInKitchen ? 'Solo en Cocina' : 'En todo el POS'}</span>
+              </button>
+            )}
+
+            <button
+              id="kds-test-chime"
+              onClick={() => playOrderChime()}
+              className="px-2 py-1 rounded-lg text-xs font-bold transition-all border bg-stone-900 border-amber-500/40 text-amber-400 hover:bg-amber-950/70 hover:border-amber-400 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+              title="Probar sonido de campana de comanda"
+            >
+              <Bell className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Probar Campana</span>
+            </button>
+          </div>
+
           {/* History Toggle */}
           <button
             id="kds-toggle-archived"
@@ -305,7 +326,7 @@ export const KdsScreen: React.FC<KdsScreenProps> = ({
                 <div
                   key={order.id}
                   id={`kds-card-${order.id}`}
-                  className={`w-[320px] sm:w-[350px] shrink-0 bg-stone-900 rounded-2xl border-2 ${theme.cardBorder} flex flex-col overflow-hidden shadow-xl`}
+                  className={`w-[320px] sm:w-[350px] shrink-0 bg-stone-900 rounded-2xl border-2 ${theme.cardBorder} flex flex-col overflow-hidden shadow-xl transition-all duration-300 ease-out`}
                 >
                   {/* 1. Header: Color-coded bar with #Number, Type, Mesa, and Elapsed Time */}
                   <div className={`px-3.5 py-2 ${theme.headerBg} flex items-center justify-between shrink-0 font-black`}>

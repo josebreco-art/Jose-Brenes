@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Activity, 
   CheckCircle2, 
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Sale } from '../../types/pos';
 import { getCostaRicaDate } from '../../utils/dateUtils';
+import { PosApiService } from '../../services/api';
 
 interface SyncHealthReportTabProps {
   sales: Sale[];
@@ -65,6 +66,22 @@ export const SyncHealthReportTab: React.FC<SyncHealthReportTabProps> = ({
   }, []);
 
   const todayStr = useMemo(() => getCostaRicaDate(), []);
+  const [sevenDaySales, setSevenDaySales] = useState<Sale[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const fromDate = last7Days[0];
+    if (fromDate && todayStr) {
+      PosApiService.getSales({ dateFrom: fromDate, dateTo: todayStr })
+        .then(res => {
+          if (active && Array.isArray(res)) {
+            setSevenDaySales(res);
+          }
+        })
+        .catch(() => {});
+    }
+    return () => { active = false; };
+  }, [last7Days, todayStr]);
 
   // Construir métricas agregadas por día para los 7 días
   const daysData = useMemo<DayHealthData[]>(() => {
@@ -73,8 +90,12 @@ export const SyncHealthReportTab: React.FC<SyncHealthReportTabProps> = ({
     // Inicializar los 7 días
     last7Days.forEach(d => mapByDate.set(d, []));
 
+    const mergedMap = new Map<string, Sale>();
+    for (const s of (sales || [])) if (s && s.id) mergedMap.set(s.id, s);
+    for (const s of sevenDaySales) if (s && s.id) mergedMap.set(s.id, s);
+
     // Agrupar ventas en el mapa
-    (sales || []).forEach(s => {
+    mergedMap.forEach(s => {
       if (!s) return;
       const sDate = s.timestamp ? getCostaRicaDate(s.timestamp) : s.date;
       if (sDate && mapByDate.has(sDate)) {

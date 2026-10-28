@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ShieldCheck, 
   CheckCircle2, 
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Sale } from '../../types/pos';
 import { getCostaRicaDate } from '../../utils/dateUtils';
+import { PosApiService } from '../../services/api';
 
 interface EstadoDgtReportTabProps {
   sales: Sale[];
@@ -25,14 +26,35 @@ export const EstadoDgtReportTab: React.FC<EstadoDgtReportTabProps> = ({ sales })
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACEPTADO' | 'PENDIENTE' | 'RECHAZADO'>('ALL');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [allHistoricalSales, setAllHistoricalSales] = useState<Sale[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    PosApiService.getSales({ all: true })
+      .then(res => {
+        if (active && Array.isArray(res)) {
+          setAllHistoricalSales(res);
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  // Combinar ventas en memoria con el historial completo sin duplicados
+  const combinedSales = useMemo(() => {
+    const map = new Map<string, Sale>();
+    for (const s of (sales || [])) if (s && s.id) map.set(s.id, s);
+    for (const s of allHistoricalSales) if (s && s.id) map.set(s.id, s);
+    return Array.from(map.values());
+  }, [sales, allHistoricalSales]);
 
   // Filtrar ventas que representen comprobantes electrónicos
   const electronicDocs = useMemo(() => {
-    return (sales || []).filter(s => {
+    return combinedSales.filter(s => {
       if (!s) return false;
       return Boolean(s.consecutive20 || s.numericKey50 || s.electronicDocumentType || s.invoiceStatus === 'INVOICED');
     });
-  }, [sales]);
+  }, [combinedSales]);
 
   // Contadores de estado
   const metrics = useMemo(() => {

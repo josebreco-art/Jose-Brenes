@@ -8,11 +8,20 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0',
-    strictPort: true
+    strictPort: true,
+    hmr: false,
+    watch: {
+      ignored: [
+        '**/data/**',
+        '**/backups/**',
+        '**/dist/**',
+        '**/public/uploads/**'
+      ]
+    }
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
     emptyOutDir: false
   }
 });

@@ -1,35 +1,34 @@
-// División Territorial Administrativa Oficial de Costa Rica (DGT / Ministerio de Hacienda v4.4)
-// Estructura requerida: Provincia (1 dígito), Cantón (2 dígitos), Distrito (2 dígitos)
+// Catálogo Geográfico y Actividades Económicas de Costa Rica (DGT / Ministerio de Hacienda v4.4)
 
-export interface Province {
-  id: string; // '1'..'7'
+export interface CostaRicaProvince {
+  id: string; // '1' .. '7'
   name: string;
 }
 
-export interface Canton {
-  provinceId: string; // '1'..'7'
-  code: string;       // '01'..'99'
+export interface CostaRicaCanton {
+  provinceId: string;
+  code: string; // '01' .. '99'
   name: string;
 }
 
-export interface District {
-  provinceId: string; // '1'..'7'
-  cantonCode: string; // '01'..'99'
-  code: string;       // '01'..'99'
+export interface CostaRicaDistrict {
+  provinceId: string;
+  cantonCode: string;
+  code: string; // '01' .. '99'
   name: string;
 }
 
-export const COSTA_RICA_PROVINCES: Province[] = [
-  { id: '1', name: 'San José' },
-  { id: '2', name: 'Alajuela' },
-  { id: '3', name: 'Cartago' },
-  { id: '4', name: 'Heredia' },
-  { id: '5', name: 'Guanacaste' },
-  { id: '6', name: 'Puntarenas' },
-  { id: '7', name: 'Limón' }
+export const COSTA_RICA_PROVINCES: CostaRicaProvince[] = [
+  { id: '1', name: '1 - San José' },
+  { id: '2', name: '2 - Alajuela' },
+  { id: '3', name: '3 - Cartago' },
+  { id: '4', name: '4 - Heredia' },
+  { id: '5', name: '5 - Guanacaste' },
+  { id: '6', name: '6 - Puntarenas' },
+  { id: '7', name: '7 - Limón' }
 ];
 
-export const COSTA_RICA_CANTONS: Canton[] = [
+export const COSTA_RICA_CANTONS: CostaRicaCanton[] = [
   // San José (1)
   { provinceId: '1', code: '01', name: 'San José' },
   { provinceId: '1', code: '02', name: 'Escazú' },
@@ -129,13 +128,20 @@ export const COSTA_RICA_CANTONS: Canton[] = [
   { provinceId: '7', code: '06', name: 'Guácimo' }
 ];
 
-export const COSTA_RICA_DISTRICTS: District[] = [
-  // Cartago (3) - Cantón Alvarado (06) [Ubicación de Pollo Frito Sabor Cervanteño]
+export const COSTA_RICA_DISTRICTS: CostaRicaDistrict[] = [
+  // Cartago - Alvarado (06)
   { provinceId: '3', cantonCode: '06', code: '01', name: 'Pacayas' },
   { provinceId: '3', cantonCode: '06', code: '02', name: 'Cervantes' },
   { provinceId: '3', cantonCode: '06', code: '03', name: 'Capellades' },
 
-  // Cartago (3) - Cantón Cartago (01)
+  // Cartago - Oreamuno (07)
+  { provinceId: '3', cantonCode: '07', code: '01', name: 'San Rafael' },
+  { provinceId: '3', cantonCode: '07', code: '02', name: 'Cot' },
+  { provinceId: '3', cantonCode: '07', code: '03', name: 'Potrero Cerrado' },
+  { provinceId: '3', cantonCode: '07', code: '04', name: 'Cipreses' },
+  { provinceId: '3', cantonCode: '07', code: '05', name: 'Santa Rosa' },
+
+  // Cartago - Cartago (01)
   { provinceId: '3', cantonCode: '01', code: '01', name: 'Oriental' },
   { provinceId: '3', cantonCode: '01', code: '02', name: 'Occidental' },
   { provinceId: '3', cantonCode: '01', code: '03', name: 'Carmen' },
@@ -148,58 +154,14 @@ export const COSTA_RICA_DISTRICTS: District[] = [
   { provinceId: '3', cantonCode: '01', code: '10', name: 'Llano Grande' },
   { provinceId: '3', cantonCode: '01', code: '11', name: 'Quebradilla' },
 
-  // Cartago (3) - Cantón Paraíso (02)
+  // Cartago - Paraíso (02)
   { provinceId: '3', cantonCode: '02', code: '01', name: 'Paraíso' },
   { provinceId: '3', cantonCode: '02', code: '02', name: 'Santiago' },
   { provinceId: '3', cantonCode: '02', code: '03', name: 'Orosi' },
   { provinceId: '3', cantonCode: '02', code: '04', name: 'Cachí' },
   { provinceId: '3', cantonCode: '02', code: '05', name: 'Llanos de Santa Lucía' },
-  { provinceId: '3', cantonCode: '02', code: '06', name: 'Birrisito' },
 
-  // Cartago (3) - Cantón La Unión (03)
-  { provinceId: '3', cantonCode: '03', code: '01', name: 'Tres Ríos' },
-  { provinceId: '3', cantonCode: '03', code: '02', name: 'San Diego' },
-  { provinceId: '3', cantonCode: '03', code: '03', name: 'San Juan' },
-  { provinceId: '3', cantonCode: '03', code: '04', name: 'San Rafael' },
-  { provinceId: '3', cantonCode: '03', code: '05', name: 'Concepción' },
-  { provinceId: '3', cantonCode: '03', code: '06', name: 'Dulce Nombre' },
-  { provinceId: '3', cantonCode: '03', code: '07', name: 'San Ramón' },
-  { provinceId: '3', cantonCode: '03', code: '08', name: 'Río Azul' },
-
-  // Cartago (3) - Cantón Jiménez (04)
-  { provinceId: '3', cantonCode: '04', code: '01', name: 'Juan Viñas' },
-  { provinceId: '3', cantonCode: '04', code: '02', name: 'Tucurrique' },
-  { provinceId: '3', cantonCode: '04', code: '03', name: 'Pejibaye' },
-  { provinceId: '3', cantonCode: '04', code: '04', name: 'La Victoria' },
-
-  // Cartago (3) - Cantón Turrialba (05)
-  { provinceId: '3', cantonCode: '05', code: '01', name: 'Turrialba' },
-  { provinceId: '3', cantonCode: '05', code: '02', name: 'La Suiza' },
-  { provinceId: '3', cantonCode: '05', code: '03', name: 'Peralta' },
-  { provinceId: '3', cantonCode: '05', code: '04', name: 'Santa Cruz' },
-  { provinceId: '3', cantonCode: '05', code: '05', name: 'Santa Teresita' },
-  { provinceId: '3', cantonCode: '05', code: '06', name: 'Pavones' },
-  { provinceId: '3', cantonCode: '05', code: '07', name: 'Tuis' },
-  { provinceId: '3', cantonCode: '05', code: '08', name: 'Tayutic' },
-  { provinceId: '3', cantonCode: '05', code: '09', name: 'Santa Rosa' },
-  { provinceId: '3', cantonCode: '05', code: '10', name: 'Tres Equis' },
-  { provinceId: '3', cantonCode: '05', code: '11', name: 'La Isabel' },
-  { provinceId: '3', cantonCode: '05', code: '12', name: 'Chirripó' },
-
-  // Cartago (3) - Cantón Oreamuno (07)
-  { provinceId: '3', cantonCode: '07', code: '01', name: 'San Rafael' },
-  { provinceId: '3', cantonCode: '07', code: '02', name: 'Cot' },
-  { provinceId: '3', cantonCode: '07', code: '03', name: 'Potrero Cerrado' },
-  { provinceId: '3', cantonCode: '07', code: '04', name: 'Cipreses' },
-  { provinceId: '3', cantonCode: '07', code: '05', name: 'Santa Rosa' },
-
-  // Cartago (3) - Cantón El Guarco (08)
-  { provinceId: '3', cantonCode: '08', code: '01', name: 'El Tejar' },
-  { provinceId: '3', cantonCode: '08', code: '02', name: 'San Isidro' },
-  { provinceId: '3', cantonCode: '08', code: '03', name: 'Tobosi' },
-  { provinceId: '3', cantonCode: '08', code: '04', name: 'Patio de Agua' },
-
-  // San José (1) - Cantón San José (01)
+  // San José - San José (01)
   { provinceId: '1', cantonCode: '01', code: '01', name: 'Carmen' },
   { provinceId: '1', cantonCode: '01', code: '02', name: 'Merced' },
   { provinceId: '1', cantonCode: '01', code: '03', name: 'Hospital' },
@@ -212,7 +174,18 @@ export const COSTA_RICA_DISTRICTS: District[] = [
   { provinceId: '1', cantonCode: '01', code: '10', name: 'Hatillo' },
   { provinceId: '1', cantonCode: '01', code: '11', name: 'San Sebastián' },
 
-  // Alajuela (2) - Cantón Alajuela (01)
+  // San José - Escazú (02)
+  { provinceId: '1', cantonCode: '02', code: '01', name: 'Escazú' },
+  { provinceId: '1', cantonCode: '02', code: '02', name: 'San Antonio' },
+  { provinceId: '1', cantonCode: '02', code: '03', name: 'San Rafael' },
+
+  // San José - Montes de Oca (15)
+  { provinceId: '1', cantonCode: '15', code: '01', name: 'San Pedro' },
+  { provinceId: '1', cantonCode: '15', code: '02', name: 'Sabanilla' },
+  { provinceId: '1', cantonCode: '15', code: '03', name: 'Mercedes' },
+  { provinceId: '1', cantonCode: '15', code: '04', name: 'San Rafael' },
+
+  // Alajuela - Alajuela (01)
   { provinceId: '2', cantonCode: '01', code: '01', name: 'Alajuela' },
   { provinceId: '2', cantonCode: '01', code: '02', name: 'San José' },
   { provinceId: '2', cantonCode: '01', code: '03', name: 'Carrizal' },
@@ -228,18 +201,96 @@ export const COSTA_RICA_DISTRICTS: District[] = [
   { provinceId: '2', cantonCode: '01', code: '13', name: 'Garita' },
   { provinceId: '2', cantonCode: '01', code: '14', name: 'Sarapiquí' },
 
-  // Heredia (4) - Cantón Heredia (01)
+  // Heredia - Heredia (01)
   { provinceId: '4', cantonCode: '01', code: '01', name: 'Heredia' },
   { provinceId: '4', cantonCode: '01', code: '02', name: 'Mercedes' },
   { provinceId: '4', cantonCode: '01', code: '03', name: 'San Francisco' },
   { provinceId: '4', cantonCode: '01', code: '04', name: 'Ulloa' },
-  { provinceId: '4', cantonCode: '01', code: '05', name: 'Varablanca' }
+  { provinceId: '4', cantonCode: '01', code: '05', name: 'Varablanca' },
+
+  // Heredia - Barva (02)
+  { provinceId: '4', cantonCode: '02', code: '01', name: 'Barva' },
+  { provinceId: '4', cantonCode: '02', code: '02', name: 'San Pedro' },
+  { provinceId: '4', cantonCode: '02', code: '03', name: 'San Pablo' },
+
+  // Heredia - Santo Domingo (03)
+  { provinceId: '4', cantonCode: '03', code: '01', name: 'Santo Domingo' },
+  { provinceId: '4', cantonCode: '03', code: '02', name: 'San Vicente' },
+
+  // Guanacaste - Liberia (01)
+  { provinceId: '5', cantonCode: '01', code: '01', name: 'Liberia' },
+  { provinceId: '5', cantonCode: '01', code: '02', name: 'Cañas Dulces' },
+  { provinceId: '5', cantonCode: '01', code: '03', name: 'Mayorga' },
+  { provinceId: '5', cantonCode: '01', code: '04', name: 'Nacascolo' },
+  { provinceId: '5', cantonCode: '01', code: '05', name: 'Curubandé' },
+
+  // Guanacaste - Nicoya (02)
+  { provinceId: '5', cantonCode: '02', code: '01', name: 'Nicoya' },
+  { provinceId: '5', cantonCode: '02', code: '02', name: 'Mansión' },
+  { provinceId: '5', cantonCode: '02', code: '03', name: 'San Antonio' },
+
+  // Puntarenas - Puntarenas (01)
+  { provinceId: '6', cantonCode: '01', code: '01', name: 'Puntarenas' },
+  { provinceId: '6', cantonCode: '01', code: '02', name: 'Pitahaya' },
+  { provinceId: '6', cantonCode: '01', code: '03', name: 'Chomes' },
+  { provinceId: '6', cantonCode: '01', code: '04', name: 'Lepanto' },
+  { provinceId: '6', cantonCode: '01', code: '05', name: 'Paquera' },
+  { provinceId: '6', cantonCode: '01', code: '06', name: 'Manzanillo' },
+  { provinceId: '6', cantonCode: '01', code: '07', name: 'Guacimal' },
+  { provinceId: '6', cantonCode: '01', code: '08', name: 'Barranca' },
+  { provinceId: '6', cantonCode: '01', code: '09', name: 'Monteverde' },
+  { provinceId: '6', cantonCode: '01', code: '10', name: 'Isla del Coco' },
+  { provinceId: '6', cantonCode: '01', code: '11', name: 'Cóbano' },
+  { provinceId: '6', cantonCode: '01', code: '12', name: 'Chacarita' },
+
+  // Puntarenas - Quepos (06)
+  { provinceId: '6', cantonCode: '06', code: '01', name: 'Quepos' },
+  { provinceId: '6', cantonCode: '06', code: '02', name: 'Savegre' },
+  { provinceId: '6', cantonCode: '06', code: '03', name: 'Naranjito' },
+
+  // Limón - Limón (01)
+  { provinceId: '7', cantonCode: '01', code: '01', name: 'Limón' },
+  { provinceId: '7', cantonCode: '01', code: '02', name: 'Valle La Estrella' },
+  { provinceId: '7', cantonCode: '01', code: '03', name: 'Río Blanco' },
+  { provinceId: '7', cantonCode: '01', code: '04', name: 'Matama' },
+
+  // Limón - Pococí (02)
+  { provinceId: '7', cantonCode: '02', code: '01', name: 'Guápiles' },
+  { provinceId: '7', cantonCode: '02', code: '02', name: 'Jiménez' },
+  { provinceId: '7', cantonCode: '02', code: '03', name: 'Rita' },
+  { provinceId: '7', cantonCode: '02', code: '04', name: 'Roxana' },
+  { provinceId: '7', cantonCode: '02', code: '05', name: 'Cariari' },
+  { provinceId: '7', cantonCode: '02', code: '06', name: 'Colorado' },
+  { provinceId: '7', cantonCode: '02', code: '07', name: 'La Colonia' }
 ];
 
-export function getDistrictsForCanton(provinceId: string, cantonCode: string): District[] {
-  const normProvince = String(provinceId || '').trim();
-  const normCanton = String(cantonCode || '').trim().padStart(2, '0');
-  return COSTA_RICA_DISTRICTS.filter(d => 
-    d.provinceId === normProvince && d.cantonCode === normCanton
-  );
+export function getDistrictsForCanton(provinceId: string, cantonCode: string): CostaRicaDistrict[] {
+  const found = COSTA_RICA_DISTRICTS.filter(d => d.provinceId === provinceId && d.cantonCode === cantonCode);
+  if (found.length > 0) return found;
+  
+  // Si es un cantón sin distritos pre-cargados específicos, proveer distritos por defecto del cantón
+  const cantonObj = COSTA_RICA_CANTONS.find(c => c.provinceId === provinceId && c.code === cantonCode);
+  const name = cantonObj ? cantonObj.name : 'Central';
+  return [
+    { provinceId, cantonCode, code: '01', name: `${name} (Central)` },
+    { provinceId, cantonCode, code: '02', name: 'Distrito 2' }
+  ];
 }
+
+export const COMMON_RECEIVER_ACTIVITIES = [
+  { code: '5610.0', description: 'Actividades de restaurantes y de servicio móvil de comidas' },
+  { code: '620101', description: 'Actividades de desarrollo de sistemas informáticos y software' },
+  { code: '620201', description: 'Actividades de consultoría de informática y de gestión de instalaciones' },
+  { code: '692001', description: 'Actividades de contabilidad, teneduría de libros y auditoría; asesoramiento tributario' },
+  { code: '691001', description: 'Actividades jurídicas y notariales' },
+  { code: '702001', description: 'Actividades de asesoramiento empresarial y en materia de gestión' },
+  { code: '711001', description: 'Servicios de arquitectura y de ingeniería y actividades conexas' },
+  { code: '862001', description: 'Actividades de médicos y odontólogos' },
+  { code: '471101', description: 'Venta al por menor en comercios no especializados con surtido compuesto por alimentos' },
+  { code: '492301', description: 'Transporte de carga por carretera' },
+  { code: '452001', description: 'Mantenimiento y reparación de vehículos de motor' },
+  { code: '551001', description: 'Actividades de alojamiento para estancias cortas (hoteles, cabinas)' },
+  { code: '854901', description: 'Otros tipos de enseñanza' },
+  { code: '960201', description: 'Peluquería y otros tratamientos de belleza' },
+  { code: '011901', description: 'Cultivo de otros productos agrícolas no clasificados' }
+];

@@ -352,6 +352,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       // Fallback local garantizado
                       (e.target as HTMLImageElement).src = '/images/products/pollo-crujiente.svg';
@@ -874,6 +875,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({
                     src={getLocalProductImage(selectedProductForMod.image, selectedProductForMod.categoryId, selectedProductForMod.name, selectedProductForMod.sku)}
                     alt={selectedProductForMod.name}
                     className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0 bg-stone-100"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/images/products/pollo-crujiente.svg'; }}
                   />
                   <div>

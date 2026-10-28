@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   Printer, 
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Sale } from '../../types/pos';
 import { getCostaRicaDate } from '../../utils/dateUtils';
+import { PosApiService } from '../../services/api';
 
 interface LibroIvaReportTabProps {
   sales: Sale[];
@@ -37,10 +38,40 @@ export const LibroIvaReportTab: React.FC<LibroIvaReportTabProps> = ({ sales }) =
   });
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [docTypeFilter, setDocTypeFilter] = useState<'ALL' | '01' | '04' | '03'>('ALL');
+  const [historicalPeriodSales, setHistoricalPeriodSales] = useState<Sale[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const df = dateMode === 'month'
+      ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`
+      : startDate;
+    const dt = dateMode === 'month'
+      ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(new Date(selectedYear, selectedMonth, 0).getDate()).padStart(2, '0')}`
+      : endDate;
+
+    if (df && dt) {
+      PosApiService.getSales({ dateFrom: df, dateTo: dt })
+        .then(res => {
+          if (active && Array.isArray(res)) {
+            setHistoricalPeriodSales(res);
+          }
+        })
+        .catch(() => {});
+    }
+    return () => { active = false; };
+  }, [dateMode, selectedYear, selectedMonth, startDate, endDate]);
+
+  // Combinar ventas en memoria con las consultadas del período en el servidor sin duplicados
+  const combinedSales = useMemo(() => {
+    const map = new Map<string, Sale>();
+    for (const s of (sales || [])) if (s && s.id) map.set(s.id, s);
+    for (const s of historicalPeriodSales) if (s && s.id) map.set(s.id, s);
+    return Array.from(map.values());
+  }, [sales, historicalPeriodSales]);
 
   // Filtrar ventas por el período seleccionado
   const periodSales = useMemo(() => {
-    return (sales || []).filter(sale => {
+    return combinedSales.filter(sale => {
       if (!sale) return false;
       const saleDate = sale.timestamp ? getCostaRicaDate(sale.timestamp) : sale.date;
       if (!saleDate) return false;
@@ -55,7 +86,7 @@ export const LibroIvaReportTab: React.FC<LibroIvaReportTabProps> = ({ sales }) =
         return saleDate >= startDate && saleDate <= endDate;
       }
     });
-  }, [sales, dateMode, selectedYear, selectedMonth, startDate, endDate]);
+  }, [combinedSales, dateMode, selectedYear, selectedMonth, startDate, endDate]);
 
   // Cálculos tributarios D-104
   const ivaSummary = useMemo(() => {
