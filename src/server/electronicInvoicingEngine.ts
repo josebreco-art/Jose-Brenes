@@ -786,11 +786,127 @@ export class ElectronicInvoicingEngine {
         };
       }
 
-      const queryRes = await HaciendaApiClient.queryDocumentStatus({
+      let queryRes = await HaciendaApiClient.queryDocumentStatus({
         token: tokenRes.token,
         environment: directConfig.environment,
         clave50: numericKey
       });
+
+      // Si el comprobante estaba en CONTINGENCIA_PENDIENTE / SIN_INTERNET_PENDIENTE / PENDIENTE_ENVIO / CONTINGENCIA
+      // y Hacienda indica que aún no lo ha recibido (404 / no_encontrado / error de no registrado),
+      // proceder a firmarlo (si no tenía firma XAdES-EPES válida) y transmitirlo con su MISMA clave y consecutivo.
+      const isUnsentContingency =
+        doc.status === 'CONTINGENCIA_PENDIENTE' ||
+        doc.status === 'SIN_INTERNET_PENDIENTE' ||
+        doc.status === 'PENDIENTE_ENVIO' ||
+        doc.status === 'CONTINGENCIA';
+
+      const notFoundInHacienda =
+        queryRes.status === 'no_encontrado' ||
+        queryRes.httpStatus === 404 ||
+        (queryRes.httpStatus === 400 && (!queryRes.status || queryRes.status === 'error'));
+
+      if (isUnsentContingency && notFoundInHacienda) {
+        const restaurantInfo = db.getRestaurantInfo();
+        const emisorTaxId = directConfig.emisorTaxId || restaurantInfo.taxId;
+        let xmlToSend =
+          doc.xmlGenerated ||
+          db.getXmlForDocument(doc.numericKey) ||
+          HaciendaXmlGenerator.generateDocumentXml(doc);
+
+        const activeKeyB64 =
+          directConfig.cryptographicKeyBase64 && directConfig.cryptographicKeyBase64 !== '[STORED_LOCALLY]'
+            ? directConfig.cryptographicKeyBase64
+            : db.loadLocalCryptoKey();
+
+        if (xmlToSend && activeKeyB64 && directConfig.cryptographicKeyPin) {
+          if (!xmlToSend.includes('<ds:Signature')) {
+            try {
+              const signedXml = XmlSignerService.signXmlDocument(
+                xmlToSend,
+                emisorTaxId,
+                activeKeyB64,
+                directConfig.cryptographicKeyPin,
+                directConfig.environment
+              );
+              if (signedXml && typeof signedXml === 'string' && signedXml.includes('<ds:Signature')) {
+                xmlToSend = signedXml;
+                doc.xmlGenerated = xmlToSend;
+                doc.digitalSignatureStatus = 'FIRMADO_XADES_EPES';
+              }
+            } catch (signErr: any) {
+              doc.diagnosticLogs.push({
+                id: `diag-${Date.now()}-retry-sign-err`,
+                timestamp: new Date().toISOString(),
+                action: 'ENVIO',
+                endpoint: 'LOCAL_SIGNER',
+                httpStatus: 400,
+                parsedMessage: signErr.message || 'Error firmando XML en reintento',
+                attemptsCount: attemptNumber,
+                error: signErr.message
+              });
+            }
+          }
+
+          if (xmlToSend.includes('<ds:Signature')) {
+            const xmlBase64 = Buffer.from(xmlToSend, 'utf-8').toString('base64');
+            const sendPayload: HaciendaSendPayload = {
+              clave: doc.numericKey,
+              fecha: doc.issueDate,
+              emisor: {
+                tipoIdentificacion: String(doc.issuer.identificationType).padStart(2, '0'),
+                numeroIdentificacion: emisorTaxId.replace(/\D/g, '')
+              },
+              receptor: doc.receiver?.identificationNumber
+                ? {
+                    tipoIdentificacion: String(doc.receiver.identificationType || '01').padStart(2, '0'),
+                    numeroIdentificacion: doc.receiver.identificationNumber.replace(/\D/g, '')
+                  }
+                : undefined,
+              comprobanteXml: xmlBase64
+            };
+
+            const sendRes = await HaciendaApiClient.sendDocument({
+              token: tokenRes.token,
+              environment: directConfig.environment,
+              payload: sendPayload
+            });
+
+            const sendIso = new Date().toISOString();
+            doc.sendTimestamp = sendIso;
+            doc.sendEndpoint = sendRes.endpoint;
+            doc.sendHttpStatus = sendRes.status;
+            doc.sendResponseRaw = sendRes.rawResponse;
+            doc.diagnosticLogs.push({
+              id: `diag-${Date.now()}-retry-send`,
+              timestamp: sendIso,
+              action: 'ENVIO',
+              endpoint: sendRes.endpoint,
+              httpStatus: sendRes.status,
+              haciendaIndEstado: sendRes.success ? 'recibido' : 'error',
+              haciendaResponseRaw: sendRes.rawResponse,
+              parsedMessage: sendRes.message,
+              attemptsCount: attemptNumber,
+              error: sendRes.success ? undefined : sendRes.message
+            });
+
+            if (sendRes.success) {
+              doc.status = 'ENVIADO_PROCESANDO';
+              doc.statusDescription = 'Comprobante firmado y transmitido a Hacienda exitosamente. Consultando validación...';
+              doc.xmlGenerated = xmlToSend;
+              db.saveElectronicDocument(doc);
+
+              // Esperar brevemente a que Hacienda procese la recepción y volver a consultar
+              await new Promise(r => setTimeout(r, 2500));
+              queryRes = await HaciendaApiClient.queryDocumentStatus({
+                token: tokenRes.token,
+                environment: directConfig.environment,
+                clave50: numericKey
+              });
+            }
+          }
+        }
+      }
 
       doc.lastQueryHttpStatus = queryRes.httpStatus;
       doc.lastQueryIndEstado = queryRes.status;
@@ -1018,10 +1134,49 @@ export class ElectronicInvoicingEngine {
           continue;
         }
 
-        // Si no hay token de Hacienda disponible en este momento, mantener en cola
-        if (!token || !doc.xmlGenerated) {
+        // Recuperar el XML desde memoria o desde el almacenamiento segregado en disco (data/xmls/)
+        let xmlToSend =
+          doc.xmlGenerated ||
+          db.getXmlForDocument(doc.numericKey) ||
+          HaciendaXmlGenerator.generateDocumentXml(doc);
+
+        // Si no hay token de Hacienda disponible o no se pudo recuperar el XML, mantener en cola
+        if (!token || !xmlToSend) {
           stillProcessing++;
           continue;
+        }
+
+        // Si el XML aún no cuenta con firma XAdES-EPES (<ds:Signature), firmarlo ahora con la llave .p12 activa
+        if (!xmlToSend.includes('<ds:Signature')) {
+          const activeKeyB64 =
+            directConfig.cryptographicKeyBase64 && directConfig.cryptographicKeyBase64 !== '[STORED_LOCALLY]'
+              ? directConfig.cryptographicKeyBase64
+              : db.loadLocalCryptoKey();
+          if (activeKeyB64 && directConfig.cryptographicKeyPin) {
+            try {
+              const signedXml = XmlSignerService.signXmlDocument(
+                xmlToSend,
+                emisorTaxId,
+                activeKeyB64,
+                directConfig.cryptographicKeyPin,
+                directConfig.environment
+              );
+              if (signedXml && typeof signedXml === 'string' && signedXml.includes('<ds:Signature')) {
+                xmlToSend = signedXml;
+                doc.xmlGenerated = xmlToSend;
+                doc.digitalSignatureStatus = 'FIRMADO_XADES_EPES';
+              } else {
+                stillProcessing++;
+                continue;
+              }
+            } catch (signErr) {
+              stillProcessing++;
+              continue;
+            }
+          } else {
+            stillProcessing++;
+            continue;
+          }
         }
 
         // 2.2 Idempotencia: Consultar primero si Hacienda ya recibió esta clave numérica
@@ -1063,7 +1218,7 @@ export class ElectronicInvoicingEngine {
 
         // 2.3 Transmisión exacta del comprobante original firmado
         try {
-          const xmlBase64 = Buffer.from(doc.xmlGenerated, 'utf-8').toString('base64');
+          const xmlBase64 = Buffer.from(xmlToSend, 'utf-8').toString('base64');
           const sendPayload: HaciendaSendPayload = {
             clave: doc.numericKey, // MISMA CLAVE DE 50 DÍGITOS
             fecha: doc.issueDate,  // FECHA/HORA ORIGINAL INMUTABLE
@@ -1092,6 +1247,7 @@ export class ElectronicInvoicingEngine {
           doc.sendEndpoint = sendRes.endpoint;
           doc.sendHttpStatus = sendRes.status;
           doc.sendResponseRaw = sendRes.rawResponse;
+          doc.xmlGenerated = xmlToSend;
 
           doc.diagnosticLogs = doc.diagnosticLogs || [];
           doc.diagnosticLogs.push({
@@ -1110,7 +1266,24 @@ export class ElectronicInvoicingEngine {
           if (sendRes.success) {
             doc.status = 'ENVIADO_PROCESANDO';
             doc.statusDescription = 'Comprobante offline transmitido exitosamente a Hacienda (202 Accepted) tras restablecer conexión';
-            stillProcessing++;
+            db.saveElectronicDocument(doc);
+            if (doc.saleId) {
+              db.updateSale(doc.saleId, {
+                haciendaStatus: doc.status,
+                haciendaResponseMessage: doc.statusDescription
+              });
+            }
+
+            // Consultar resolución de Hacienda tras 2.5 segundos para confirmar aceptación inmediata si ya fue procesado
+            await new Promise(r => setTimeout(r, 2500));
+            const followUpRes = await this.queryHaciendaStatus(doc.numericKey);
+            if (followUpRes.status === 'ACEPTADO_HACIENDA') {
+              accepted++;
+            } else if (followUpRes.status === 'RECHAZADO_HACIENDA') {
+              rejected++;
+            } else {
+              stillProcessing++;
+            }
           } else {
             const isDuplicate = sendRes.status === 400 || sendRes.status === 409 || 
               (sendRes.message && /duplicad|ya existe|ya fue recibid|consecutivo/i.test(sendRes.message));
@@ -1124,14 +1297,14 @@ export class ElectronicInvoicingEngine {
               doc.statusDescription = `Reintento de transmisión fallido: ${sendRes.message}`;
               stillProcessing++;
             }
-          }
 
-          db.saveElectronicDocument(doc);
-          if (doc.saleId) {
-            db.updateSale(doc.saleId, {
-              haciendaStatus: doc.status,
-              haciendaResponseMessage: doc.statusDescription
-            });
+            db.saveElectronicDocument(doc);
+            if (doc.saleId) {
+              db.updateSale(doc.saleId, {
+                haciendaStatus: doc.status,
+                haciendaResponseMessage: doc.statusDescription
+              });
+            }
           }
         } catch (sendErr: any) {
           console.warn(`[Reconciler] Error transmitiendo comprobante offline ${doc.numericKey}:`, sendErr.message);

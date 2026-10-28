@@ -1344,6 +1344,7 @@ const runAutonomousFiscalWorker = async (): Promise<void> => {
     const allDocs = db.getElectronicDocuments();
     const pendingContingency = allDocs.filter(d => 
       d.status === 'CONTINGENCIA' || 
+      d.status === 'CONTINGENCIA_PENDIENTE' || 
       d.status === 'SIN_INTERNET_PENDIENTE' || 
       d.status === 'PENDIENTE_ENVIO' || 
       d.status === 'ENVIADO_PROCESANDO'

@@ -263,7 +263,17 @@ export class Database {
     try {
       this.ensureDataDirectory();
       if (keyBase64 && keyBase64.length > 50 && keyBase64 !== '[STORED_LOCALLY]') {
-        fs.writeFileSync(CRYPTO_KEY_FILE_PATH, keyBase64.trim(), 'utf-8');
+        const cleanKey = keyBase64.trim();
+        fs.writeFileSync(CRYPTO_KEY_FILE_PATH, cleanKey, 'utf-8');
+        if (firestoreDb && !firestoreQuotaExceeded) {
+          this.queueFirestoreWrite(async () => {
+            const keyRef = doc(firestoreDb!, 'pos_data', 'hacienda_crypto_key');
+            await setDoc(keyRef, {
+              cryptographicKeyBase64: cleanKey,
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+          });
+        }
       }
     } catch (e) {
       console.warn('⚠️ Error al persistir llave criptográfica en disco local:', e);
@@ -281,6 +291,9 @@ export class Database {
     const localCryptoKey = (localHaciendaConfig.cryptographicKeyBase64 && localHaciendaConfig.cryptographicKeyBase64 !== '[STORED_LOCALLY]' && localHaciendaConfig.cryptographicKeyBase64.length > 50)
       ? localHaciendaConfig.cryptographicKeyBase64
       : this.loadLocalCryptoKey();
+    if (localCryptoKey) {
+      this.saveLocalCryptoKey(localCryptoKey);
+    }
 
     if (firestoreDb && !firestoreQuotaExceeded) {
       console.log('⏳ Verificando base de datos persistente en Firebase Firestore...');
@@ -354,10 +367,26 @@ export class Database {
 
           if (localCryptoKey) {
             mergedHaciendaConfig.cryptographicKeyBase64 = localCryptoKey;
-          } else if (mergedHaciendaConfig.cryptographicKeyBase64 === '[STORED_LOCALLY]') {
+          } else if (!mergedHaciendaConfig.cryptographicKeyBase64 || mergedHaciendaConfig.cryptographicKeyBase64 === '[STORED_LOCALLY]') {
             const diskKey = this.loadLocalCryptoKey();
             if (diskKey) {
               mergedHaciendaConfig.cryptographicKeyBase64 = diskKey;
+            } else {
+              try {
+                const cryptoSnap = await getDoc(doc(firestoreDb, 'pos_data', 'hacienda_crypto_key'));
+                if (cryptoSnap.exists()) {
+                  const cloudCryptoKey = cryptoSnap.data()?.cryptographicKeyBase64;
+                  if (cloudCryptoKey && cloudCryptoKey.length > 50 && cloudCryptoKey !== '[STORED_LOCALLY]') {
+                    mergedHaciendaConfig.cryptographicKeyBase64 = cloudCryptoKey;
+                    this.saveLocalCryptoKey(cloudCryptoKey);
+                  }
+                }
+              } catch (cryptoErr) {
+                // Ignorar error de lectura secundaria
+              }
+            }
+            if (mergedHaciendaConfig.cryptographicKeyBase64 === '[STORED_LOCALLY]') {
+              mergedHaciendaConfig.cryptographicKeyBase64 = '';
             }
           }
 
@@ -4534,7 +4563,14 @@ export class Database {
   }
 
   public getHaciendaDirectConfig(): HaciendaDirectConfig {
-    return this.data.haciendaDirectConfig || { ...INITIAL_HACIENDA_DIRECT_CONFIG };
+    const config = this.data.haciendaDirectConfig || { ...INITIAL_HACIENDA_DIRECT_CONFIG };
+    if (!config.cryptographicKeyBase64 || config.cryptographicKeyBase64 === '[STORED_LOCALLY]') {
+      const diskKey = this.loadLocalCryptoKey();
+      if (diskKey) {
+        config.cryptographicKeyBase64 = diskKey;
+      }
+    }
+    return config;
   }
 
   public saveHaciendaDirectConfig(updates: Partial<HaciendaDirectConfig>, modifierUser: string = 'Administrador Tributario'): HaciendaDirectConfig {
