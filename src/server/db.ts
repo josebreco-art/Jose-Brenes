@@ -501,11 +501,66 @@ export class Database {
             this.recalculateRegisterTotals(activeRegister);
           }
 
+          // FUSIÓN DE CLIENTES ILIMITADA (Colección 'customers' + main_database + local):
+          // Garantiza capacidad sin límite de 100 clientes y evita que un cliente recién creado se borre
+          const customersByKey = new Map<string, Customer>();
+          const cloudColCustomerIds = new Set<string>();
+          const getCustomerMergeKey = (c: Customer) => {
+            const ident = (c.identification || '').trim();
+            if (c.id === 'cust-generic-cash' || ident === '000000000') return 'cust-generic-cash';
+            return ident ? `ident:${ident}` : `id:${c.id}`;
+          };
+
+          const mergeCustomerRecord = (c: Customer) => {
+            if (!c || (!c.id && !c.identification)) return;
+            const key = getCustomerMergeKey(c);
+            const existing = customersByKey.get(key);
+            if (!existing) {
+              customersByKey.set(key, c);
+            } else {
+              const cTime = (c as any).updatedAt || c.createdAt ? new Date((c as any).updatedAt || c.createdAt!).getTime() || 0 : 0;
+              const exTime = (existing as any).updatedAt || existing.createdAt ? new Date((existing as any).updatedAt || existing.createdAt!).getTime() || 0 : 0;
+              if (cTime >= exTime) {
+                customersByKey.set(key, { ...existing, ...c, id: existing.id || c.id });
+              } else {
+                customersByKey.set(key, { ...c, ...existing, id: existing.id || c.id });
+              }
+            }
+          };
+
+          if (Array.isArray(cloudData.customers)) {
+            cloudData.customers.forEach(mergeCustomerRecord);
+          }
+          try {
+            const custColSnap = await getDocs(collection(firestoreDb, 'customers'));
+            custColSnap.forEach(d => {
+              const cust = d.data() as Customer;
+              if (cust && cust.id) {
+                cloudColCustomerIds.add(cust.id);
+                mergeCustomerRecord(cust);
+              }
+            });
+          } catch (custErr) {
+            console.warn('⚠️ No se pudo consultar colección customers en Firestore:', custErr);
+          }
+          if (Array.isArray(this.data.customers)) {
+            this.data.customers.forEach(mergeCustomerRecord);
+          }
+
+          const finalCustomers = normalizeCustomers(Array.from(customersByKey.values()));
+          for (const cust of finalCustomers) {
+            if (cust && cust.id && !cloudColCustomerIds.has(cust.id)) {
+              const cleanCust = JSON.parse(JSON.stringify(cust));
+              setDoc(doc(firestoreDb, 'customers', cust.id), cleanCust, { merge: true }).catch(() => {});
+            }
+          }
+
           this.data = {
             ...this.getDefaultData(),
             ...cloudData,
             products: finalProducts,
             categories: normalizeCategories(finalCategories),
+            customers: finalCustomers,
             users: finalUsers,
             kitchenObservations: finalObservations,
             kitchenOrders: finalKitchenOrders,
@@ -517,7 +572,7 @@ export class Database {
           };
 
           
-          console.log(`☁️ Base de datos sincronizada con Firestore (${this.data.products.length} platillos, ${this.data.categories.length} categorías, ${this.data.sales.length} ventas, ${this.data.kitchenOrders.length} comandas).`);
+          console.log(`☁️ Base de datos sincronizada con Firestore (${this.data.products.length} platillos, ${this.data.categories.length} categorías, ${this.data.customers.length} clientes, ${this.data.sales.length} ventas, ${this.data.kitchenOrders.length} comandas).`);
         } else {
           console.log('ℹ️ Base de datos remota vacía. Inicializando estado con datos locales...');
           this.triggerFirestoreSync(true);
@@ -1402,7 +1457,7 @@ export class Database {
           : (p.image || '')
       })),
       categories: data.categories || [],
-      customers: (data.customers || []).slice(0, 100),
+      customers: (data.customers || []).slice(0, 500),
       // Solo guardar resumen ligero de las últimas 10 ventas sin XMLs pesados
       sales: (data.sales || []).slice(0, 10).map(s => {
         const { xmlEmitted, xmlHaciendaResponse, ...saleClean } = s;
@@ -2173,26 +2228,60 @@ export class Database {
       customer.fiscalCondition = 'Consumidor Final';
     }
 
-    const idx = this.data.customers.findIndex(c => c.id === customer.id || (c.identification === customer.identification && customer.identification !== '000000000'));
+    const now = new Date().toISOString();
+    const cleanIdent = (customer.identification || '').trim();
+    const idx = this.data.customers.findIndex(c => c.id === customer.id || (cleanIdent && c.identification === cleanIdent && cleanIdent !== '000000000'));
+    let savedCustomer: Customer;
+
     if (idx >= 0) {
-      this.data.customers[idx] = { ...this.data.customers[idx], ...customer };
+      savedCustomer = {
+        ...this.data.customers[idx],
+        ...customer,
+        id: this.data.customers[idx].id,
+        createdAt: this.data.customers[idx].createdAt || customer.createdAt || now
+      };
+      this.data.customers[idx] = savedCustomer;
     } else {
-      this.data.customers.push(customer);
+      savedCustomer = {
+        ...customer,
+        id: customer.id || `cust-${Date.now()}`,
+        createdAt: customer.createdAt || now
+      };
+      this.data.customers.push(savedCustomer);
     }
+
     this.data.customers = normalizeCustomers(this.data.customers);
-    this.persist();
+    this.persist(true);
+
+    if (firestoreDb && !firestoreQuotaExceeded && savedCustomer.id) {
+      const cleanDoc = JSON.parse(JSON.stringify({ ...savedCustomer, updatedAt: now }));
+      this.queueFirestoreWrite(async () => {
+        await setDoc(doc(firestoreDb!, 'customers', savedCustomer.id), cleanDoc, { merge: true });
+      });
+    }
+
     return this.data.customers;
   }
 
   public importCustomers(newCustomers: Customer[], replaceAll = false): { total: number; imported: number; updated: number; customers: Customer[] } {
+    const now = new Date().toISOString();
     if (replaceAll) {
       this.data.customers = normalizeCustomers([...newCustomers]);
-      this.persist();
+      this.persist(true);
+      if (firestoreDb && !firestoreQuotaExceeded) {
+        for (const cust of this.data.customers) {
+          if (cust && cust.id) {
+            const cleanDoc = JSON.parse(JSON.stringify({ ...cust, updatedAt: now }));
+            setDoc(doc(firestoreDb, 'customers', cust.id), cleanDoc, { merge: true }).catch(() => {});
+          }
+        }
+      }
       return { total: this.data.customers.length, imported: newCustomers.length, updated: 0, customers: this.data.customers };
     }
 
     let importedCount = 0;
     let updatedCount = 0;
+    const touchedCustomers: Customer[] = [];
 
     for (const item of newCustomers) {
       if (!item.name && !item.identification) continue;
@@ -2209,24 +2298,38 @@ export class Database {
       );
 
       if (existingIdx >= 0) {
-        this.data.customers[existingIdx] = {
+        const updated = {
           ...this.data.customers[existingIdx],
           ...item,
           id: this.data.customers[existingIdx].id // preserve internal id
         };
+        this.data.customers[existingIdx] = updated;
+        touchedCustomers.push(updated);
         updatedCount++;
       } else {
-        this.data.customers.push({
+        const created = {
           ...item,
           id: item.id || `cust-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-          createdAt: item.createdAt || new Date().toISOString()
-        });
+          createdAt: item.createdAt || now
+        };
+        this.data.customers.push(created);
+        touchedCustomers.push(created);
         importedCount++;
       }
     }
 
     this.data.customers = normalizeCustomers(this.data.customers);
-    this.persist();
+    this.persist(true);
+
+    if (firestoreDb && !firestoreQuotaExceeded) {
+      for (const cust of touchedCustomers) {
+        if (cust && cust.id) {
+          const cleanDoc = JSON.parse(JSON.stringify({ ...cust, updatedAt: now }));
+          setDoc(doc(firestoreDb, 'customers', cust.id), cleanDoc, { merge: true }).catch(() => {});
+        }
+      }
+    }
+
     return {
       total: this.data.customers.length,
       imported: importedCount,
@@ -2244,7 +2347,12 @@ export class Database {
     this.data.customers = this.data.customers.filter(c => c.id !== id);
     if (this.data.customers.length !== initialLen) {
       this.data.customers = normalizeCustomers(this.data.customers);
-      this.persist();
+      this.persist(true);
+      if (firestoreDb && !firestoreQuotaExceeded) {
+        this.queueFirestoreWrite(async () => {
+          await deleteDoc(doc(firestoreDb!, 'customers', id));
+        });
+      }
       return true;
     }
     return false;

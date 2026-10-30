@@ -688,6 +688,16 @@ export default function App() {
               ]);
               setCategories(cats);
               setProducts(prods);
+            } else if (parsed && (
+              parsed.type === 'CUSTOMER_UPDATED' ||
+              parsed.type === 'CUSTOMERS_IMPORTED' ||
+              parsed.type === 'CUSTOMER_DELETED'
+            )) {
+              const updatedCustomers = await PosApiService.getCustomers();
+              if (Array.isArray(updatedCustomers) && updatedCustomers.length > 0) {
+                setCustomers(updatedCustomers);
+                offlineStorage.cacheCatalog({ customers: updatedCustomers }).catch(() => {});
+              }
             }
           } catch {}
         };
