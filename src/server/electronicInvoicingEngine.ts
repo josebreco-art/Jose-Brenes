@@ -1341,7 +1341,7 @@ export class ElectronicInvoicingEngine {
     const { 
       originalDocumentKey, 
       reason, 
-      referenceCode = '01', 
+      referenceCode = '13', 
       referenceDocumentType, 
       customNumericKey,
       cashierName = 'Cajero Principal', 
@@ -1361,7 +1361,7 @@ export class ElectronicInvoicingEngine {
     const refKey = (customNumericKey && customNumericKey.trim().length === 50) 
       ? customNumericKey.trim() 
       : originalDoc.numericKey;
-    const refCode = referenceCode || '01';
+    const refCode = referenceCode || '13';
 
     // Mostrar en consola los datos oficiales antes de generar el XML según exigencia DGT v4.4
     console.log('====================================================');

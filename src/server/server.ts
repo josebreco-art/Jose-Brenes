@@ -1632,8 +1632,8 @@ app.post('/api/fiscal/emit-credit-note', async (req, res) => {
 
     const result = await ElectronicInvoicingEngine.emitCreditNote({
       originalDocumentKey,
-      reason: reason || 'Anulación de documento de referencia',
-      referenceCode: referenceCode || '01',
+      reason: reason || 'Anula documento de referencia por error material',
+      referenceCode: referenceCode || '13',
       referenceDocumentType: referenceDocumentType || undefined,
       customNumericKey: customNumericKey || undefined,
       cashierName: cashierName || 'Cajero Principal',

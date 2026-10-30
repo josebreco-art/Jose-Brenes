@@ -652,16 +652,31 @@ class OfflineStorageService {
             if (pending <= 0) resolve(result);
           };
 
+          const LEGACY_TEST_CAT_IDS = new Set([
+            'cat-pollo', 'cat-combos', 'cat-piezas', 'cat-hamburguesas',
+            'cat-papas', 'cat-adicionales', 'cat-refrescos', 'cat-calientes', 'cat-express'
+          ]);
+
           const reqCats = store.get('catalog_categories');
           reqCats.onsuccess = () => {
-            if (reqCats.result?.value) result.categories = reqCats.result.value;
+            if (Array.isArray(reqCats.result?.value)) {
+              const filteredCats = reqCats.result.value.filter(
+                (c: any) => c && c.id && !LEGACY_TEST_CAT_IDS.has(c.id)
+              );
+              if (filteredCats.length > 0) result.categories = filteredCats;
+            }
             checkDone();
           };
           reqCats.onerror = () => checkDone();
 
           const reqProds = store.get('catalog_products');
           reqProds.onsuccess = () => {
-            if (reqProds.result?.value) result.products = reqProds.result.value;
+            if (Array.isArray(reqProds.result?.value)) {
+              const filteredProds = reqProds.result.value.filter(
+                (p: any) => p && p.id && !/^p-\d+$/.test(String(p.id))
+              );
+              if (filteredProds.length > 0) result.products = filteredProds;
+            }
             checkDone();
           };
           reqProds.onerror = () => checkDone();

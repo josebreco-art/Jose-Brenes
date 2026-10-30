@@ -156,8 +156,8 @@ export interface ElectronicDocumentReference {
   invoiceNumber: string; // Clave 50 dígitos o número consecutivo
   numericKeyOrNumber?: string;
   issueDate: string;
-  referenceCode: '01' | '02' | '03' | '04' | '05' | '06' | '13' | '16' | '99' | string; // 01: Anula, 02: Corrige, 06: Devolución, 13: Error material, 16: Sustituye rechazado, 99: Otros
-  code?: '01' | '02' | '03' | '04' | '05' | '06' | '13' | '16' | '99' | string;
+  referenceCode: '12' | '13' | '14' | '15' | '16' | string; // Códigos DGT Nota 9: 12 (Exoneración posterior), 13 (Anula por error material), 14 (Corrige monto), 15 (Sustituye por error material), 16 (Sustituye rechazado)
+  code?: '12' | '13' | '14' | '15' | '16' | string;
   otherReferenceCode?: string; // Obligatorio en DGT v4.4 cuando Codigo es '99' (mín 5, máx 100 caracteres)
   reason: string; // Motivo de anulación / Nota de crédito
 }
@@ -230,6 +230,7 @@ export interface ElectronicDocument {
   // Almacenamiento XML oficial
   xmlGenerated?: string;
   xmlResponseHacienda?: string;
+  digitalSignatureStatus?: string;
   haciendaResponseCode?: string;
   haciendaResponseDate?: string;
   haciendaResponseMessage?: string;

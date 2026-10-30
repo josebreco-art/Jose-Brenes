@@ -397,9 +397,9 @@ export class HaciendaXmlGenerator {
     // 7. Información de Referencia (Obligatorio en Notas de Crédito / Débito)
     if (doc.reference) {
       const refNumber = doc.reference.numericKeyOrNumber || doc.reference.invoiceNumber || doc.numericKey;
-      const refCode = String(doc.reference.code || doc.reference.referenceCode || '01').padStart(2, '0');
+      const refCode = String(doc.reference.code || doc.reference.referenceCode || '13').padStart(2, '0');
       const refDocType = String(doc.reference.documentType || '04').padStart(2, '0');
-      const refReason = (doc.reference.reason || 'Anulación de documento').trim().substring(0, 180);
+      const refReason = (doc.reference.reason || 'Anula documento de referencia por error material').trim().substring(0, 180);
 
       xml += `  <InformacionReferencia>\n`;
       xml += `    <TipoDocIR>${refDocType}</TipoDocIR>\n`;

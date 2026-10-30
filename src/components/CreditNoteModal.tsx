@@ -28,14 +28,13 @@ export interface CreditNoteModalProps {
   onSuccess?: () => void;
 }
 
-// 6 Motivos solicitados para el cajero
+// Códigos de Referencia (Nota 9 DGT) vigentes para Notas de Crédito
 export type CreditNotePresetReason = 
-  | 'ANULACION_TOTAL'
-  | 'DEVOLUCION_MERCANCIA'
-  | 'CORRECCION_MONTO'
-  | 'ERROR_MATERIAL'
-  | 'SUSTITUCION_RECHAZADO'
-  | 'OTRO';
+  | 'ERROR_MATERIAL_ANULA'      // 13: Anula documento de referencia por error material
+  | 'ERROR_MATERIAL_MONTO'      // 14: Corrige monto por error material
+  | 'ERROR_MATERIAL_SUSTITUYE'  // 15: Sustituye comprobante electrónico por error material
+  | 'SUSTITUCION_RECHAZADO'     // 16: Sustituye comprobante electrónico rechazado
+  | 'EXONERACION_POSTERIOR';    // 12: Nota de crédito financiera por exoneración posterior
 
 interface ReasonConfig {
   id: CreditNotePresetReason;
@@ -50,64 +49,54 @@ interface ReasonConfig {
 
 const PRESET_REASONS: ReasonConfig[] = [
   {
-    id: 'ANULACION_TOTAL',
-    label: '1. Anulación total (Estándar)',
-    sublabel: 'Anula completamente el comprobante original emitido ante Hacienda',
-    dgtCode: '01',
-    dgtCodeName: '01 = Anula documento de referencia',
-    defaultReason: 'Anulación total del comprobante de referencia',
+    id: 'ERROR_MATERIAL_ANULA',
+    label: '13. Anula por error material (Predeterminado)',
+    sublabel: 'Anula documento de referencia por error material (efecto contable en período original)',
+    dgtCode: '13',
+    dgtCodeName: '13 = Anula documento de referencia por error material',
+    defaultReason: 'Anula documento de referencia por error material',
     iconBg: 'bg-rose-50 text-rose-700 border-rose-200',
     badgeColor: 'bg-rose-100 text-rose-800'
   },
   {
-    id: 'DEVOLUCION_MERCANCIA',
-    label: '2. Devolución de mercancía',
-    sublabel: 'Reintegro por producto devuelto por el cliente',
-    dgtCode: '06',
-    dgtCodeName: '06 = Devolución de mercancía',
-    defaultReason: 'Devolución de mercadería por parte del cliente',
-    iconBg: 'bg-amber-50 text-amber-700 border-amber-200',
-    badgeColor: 'bg-amber-100 text-amber-800'
-  },
-  {
-    id: 'CORRECCION_MONTO',
-    label: '3. Corrección de monto',
-    sublabel: 'Ajuste o rectificación en los valores facturados',
-    dgtCode: '02',
-    dgtCodeName: '02 = Corrige monto',
-    defaultReason: 'Corrección en el monto facturado',
+    id: 'ERROR_MATERIAL_MONTO',
+    label: '14. Corrige monto por error material',
+    sublabel: 'Corrige monto por error material (efecto contable en período del comprobante modificado)',
+    dgtCode: '14',
+    dgtCodeName: '14 = Corrige monto por error material',
+    defaultReason: 'Corrige monto por error material',
     iconBg: 'bg-blue-50 text-blue-700 border-blue-200',
     badgeColor: 'bg-blue-100 text-blue-800'
   },
   {
-    id: 'ERROR_MATERIAL',
-    label: '4. Error material',
-    sublabel: 'Corrección o anulación por error tipográfico u operativo',
-    dgtCode: '13',
-    dgtCodeName: '13 = Anula documento de referencia por error material',
-    defaultReason: 'Anulación de comprobante por error material involuntario',
+    id: 'ERROR_MATERIAL_SUSTITUYE',
+    label: '15. Sustituye por error material',
+    sublabel: 'Sustituye comprobante electrónico por error material',
+    dgtCode: '15',
+    dgtCodeName: '15 = Sustituye comprobante electrónico por error material',
+    defaultReason: 'Sustituye comprobante electrónico por error material',
     iconBg: 'bg-purple-50 text-purple-700 border-purple-200',
     badgeColor: 'bg-purple-100 text-purple-800'
   },
   {
     id: 'SUSTITUCION_RECHAZADO',
-    label: '5. Sustitución por comprobante rechazado',
-    sublabel: 'Reemplazo fiscal por comprobante no aceptado por Hacienda',
+    label: '16. Sustituye comprobante rechazado',
+    sublabel: 'Sustituye comprobante electrónico rechazado ante la DGT',
     dgtCode: '16',
     dgtCodeName: '16 = Sustituye comprobante electrónico rechazado',
-    defaultReason: 'Sustitución de comprobante electrónico rechazado ante la DGT',
-    iconBg: 'bg-orange-50 text-orange-700 border-orange-200',
-    badgeColor: 'bg-orange-100 text-orange-800'
+    defaultReason: 'Sustituye comprobante electrónico rechazado',
+    iconBg: 'bg-amber-50 text-amber-700 border-amber-200',
+    badgeColor: 'bg-amber-100 text-amber-800'
   },
   {
-    id: 'OTRO',
-    label: '6. Otro motivo justificado',
-    sublabel: 'Otro motivo comercial (Incluye automáticamente CodigoReferenciaOTRO DGT v4.4)',
-    dgtCode: '99',
-    dgtCodeName: '99 = Otros',
-    defaultReason: 'Motivo comercial justificado según solicitud del cliente',
-    iconBg: 'bg-stone-50 text-stone-700 border-stone-200',
-    badgeColor: 'bg-stone-100 text-stone-800'
+    id: 'EXONERACION_POSTERIOR',
+    label: '12. Exoneración posterior a la facturación',
+    sublabel: 'Nota de crédito financiera por exoneración posterior (efecto en período de emisión de NC)',
+    dgtCode: '12',
+    dgtCodeName: '12 = NC financiera por exoneración posterior a la facturación',
+    defaultReason: 'Nota de crédito financiera por exoneración posterior a la facturación',
+    iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    badgeColor: 'bg-emerald-100 text-emerald-800'
   }
 ];
 
@@ -151,8 +140,8 @@ export const CreditNoteModal: React.FC<CreditNoteModalProps> = ({
   };
 
   // 2. Estados locales del flujo simplificado
-  const [selectedReasonId, setSelectedReasonId] = useState<CreditNotePresetReason>('ANULACION_TOTAL');
-  const [customReasonText, setCustomReasonText] = useState<string>('Anulación total del comprobante de referencia');
+  const [selectedReasonId, setSelectedReasonId] = useState<CreditNotePresetReason>('ERROR_MATERIAL_ANULA');
+  const [customReasonText, setCustomReasonText] = useState<string>('Anula documento de referencia por error material');
   
   // Clave precargada automáticamente y protegida
   const [keyInput, setKeyInput] = useState<string>('');
@@ -164,8 +153,8 @@ export const CreditNoteModal: React.FC<CreditNoteModalProps> = ({
   // Sincronizar estado cuando se abre el modal con un nuevo documento
   useEffect(() => {
     if (isOpen) {
-      setSelectedReasonId('ANULACION_TOTAL');
-      setCustomReasonText('Anulación total del comprobante de referencia');
+      setSelectedReasonId('ERROR_MATERIAL_ANULA');
+      setCustomReasonText('Anula documento de referencia por error material');
       setKeyInput(originalNumericKey);
       setIsKeyUnlocked(false);
       setErrorMessage(null);
@@ -200,8 +189,8 @@ export const CreditNoteModal: React.FC<CreditNoteModalProps> = ({
     }
 
     const reasonToSubmit = (customReasonText.trim() || activeReasonConfig.defaultReason).trim();
-    if (activeReasonConfig.dgtCode === '99' && reasonToSubmit.length < 5) {
-      setErrorMessage('Para el código 99 (Otros), Hacienda exige un detalle obligatorio de al menos 5 caracteres para la etiqueta CodigoReferenciaOTRO.');
+    if (reasonToSubmit.length < 3) {
+      setErrorMessage('Debe indicar una justificación válida para la Nota de Crédito.');
       setIsEmitting(false);
       return;
     }
@@ -338,12 +327,14 @@ export const CreditNoteModal: React.FC<CreditNoteModalProps> = ({
             placeholder="Indique la justificación de la Nota de Crédito..."
             className="w-full p-2.5 text-xs border border-stone-300 rounded-xl focus:ring-2 focus:ring-rose-500 font-medium bg-stone-50/50"
           />
-          {activeReasonConfig.dgtCode === '99' && (
-            <div className="p-2 bg-stone-100 border border-stone-300 rounded-lg text-[11px] text-stone-700 flex items-center gap-2">
-              <span className="font-bold text-stone-900">💡 Hacienda DGT v4.4:</span>
-              <span>El código 99 incluirá automáticamente el nodo obligatorio <strong className="font-mono text-stone-900">&lt;CodigoReferenciaOTRO&gt;</strong> con este texto (mín. 5 caracteres).</span>
-            </div>
-          )}
+          <div className="p-2 bg-stone-50 border border-stone-200 rounded-lg text-[11px] text-stone-600 flex items-center justify-between">
+            <span className="font-semibold text-stone-700">
+              Código de Referencia DGT: <strong className="font-mono text-rose-700">{activeReasonConfig.dgtCode}</strong>
+            </span>
+            <span className="text-[10px] text-stone-500 font-mono">
+              {activeReasonConfig.dgtCodeName}
+            </span>
+          </div>
         </div>
 
         {/* 2. PROTECCIÓN Y VALIDACIÓN AUTOMÁTICA DE LA CLAVE NUMÉRICA ORIGINAL */}

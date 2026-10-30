@@ -29,7 +29,22 @@ export class PosApiService {
       const stored = localStorage.getItem(key);
       if (stored) {
         this.lastLocalSignatures.set(key, stored);
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (key === STORAGE_KEYS.PRODUCTS && Array.isArray(parsed)) {
+          const validProds = parsed.filter((p: any) => p && p.id && !/^p-\d+$/.test(String(p.id)));
+          if (validProds.length === 0) return defaultData;
+          return validProds as unknown as T;
+        }
+        if (key === STORAGE_KEYS.CATEGORIES && Array.isArray(parsed)) {
+          const legacyCatIds = new Set([
+            'cat-pollo', 'cat-combos', 'cat-piezas', 'cat-hamburguesas',
+            'cat-papas', 'cat-adicionales', 'cat-refrescos', 'cat-calientes', 'cat-express'
+          ]);
+          const validCats = parsed.filter((c: any) => c && c.id && !legacyCatIds.has(c.id));
+          if (validCats.length === 0) return defaultData;
+          return validCats as unknown as T;
+        }
+        return parsed;
       }
       return defaultData;
     } catch {

@@ -77,9 +77,13 @@ import { getCostaRicaDate, getCostaRicaTime } from '../utils/dateUtils';
 
 export function normalizeCategories(categories: Category[]): Category[] {
   if (!Array.isArray(categories)) return [];
+  const legacyTestCategoryIds = new Set([
+    'cat-pollo', 'cat-combos', 'cat-piezas', 'cat-hamburguesas',
+    'cat-papas', 'cat-adicionales', 'cat-refrescos', 'cat-calientes', 'cat-express'
+  ]);
   const map = new Map<string, Category>();
   for (const cat of categories) {
-    if (!cat || !cat.id) continue;
+    if (!cat || !cat.id || legacyTestCategoryIds.has(cat.id)) continue;
     let name = (cat.name || '').trim();
     if (cat.id === 'cat-tacos' || name.toLowerCase().includes('tacos & chalupas') || name.toLowerCase() === 'tacos') {
       name = 'TACOS';
@@ -1182,7 +1186,9 @@ export class Database {
         const raw = fs.readFileSync(DB_FILE_PATH, 'utf-8');
         const parsed = JSON.parse(raw);
         console.log('✅ Base de datos cargada exitosamente desde:', DB_FILE_PATH);
-        const loadedProducts: Product[] = (parsed.products !== undefined ? parsed.products : INITIAL_PRODUCTS).map((p: Product) => ({
+        const rawProducts: Product[] = (parsed.products !== undefined ? parsed.products : INITIAL_PRODUCTS)
+          .filter((p: Product) => p && p.id && !/^p-\d+$/.test(String(p.id)));
+        const loadedProducts: Product[] = (rawProducts.length > 0 ? rawProducts : INITIAL_PRODUCTS).map((p: Product) => ({
           ...p,
           image: (p.image && typeof p.image === 'string' && p.image.trim() && !p.image.includes('[STORED_IN_PRODUCTS_COLLECTION]')) 
             ? p.image.trim() 
@@ -1745,6 +1751,7 @@ export class Database {
     const toUploadToCloud: Product[] = [];
 
     for (const id of allProductIds) {
+      if (/^p-\d+$/.test(String(id))) continue;
       const cloudProd = cloudProductsMap.get(id);
       const localProd = localProductsMap.get(id);
       const tomb = tombstones[id];
@@ -4810,14 +4817,18 @@ export class Database {
     const now = new Date().toISOString();
 
     if (categoriesToImport.length > 0) {
-      this.data.categories = normalizeCategories(categoriesToImport);
+      this.data.categories = normalizeCategories(
+        categoriesToImport.map(c => ({ ...c, updatedAt: now }))
+      );
     }
 
     if (productsToImport.length > 0) {
-      this.data.products = productsToImport.map(p => ({
-        ...p,
-        updatedAt: p.updatedAt || now
-      }));
+      this.data.products = productsToImport
+        .filter(p => p && p.id && !/^p-\d+$/.test(String(p.id)))
+        .map(p => ({
+          ...p,
+          updatedAt: now
+        }));
     }
 
     if (observationsToImport.length > 0) {
@@ -4829,7 +4840,13 @@ export class Database {
 
     // Sincronizar en segundo plano si Firebase está disponible
     if (firestoreDb && !firestoreQuotaExceeded) {
-      this.syncCatalogWithCloud().catch(() => {});
+      setDoc(doc(firestoreDb, 'pos_data', 'categories'), {
+        categories: this.data.categories,
+        updatedAt: now
+      }).catch(() => {});
+      for (const prod of this.data.products) {
+        setDoc(doc(firestoreDb, 'products', prod.id), prod).catch(() => {});
+      }
     }
 
     return {
