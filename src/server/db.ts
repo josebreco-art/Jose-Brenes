@@ -75,6 +75,27 @@ import { getLocalProductImage } from '../utils/productImages';
 import { XmlSignerService } from './xmlSigner';
 import { getCostaRicaDate, getCostaRicaTime } from '../utils/dateUtils';
 
+try {
+  const backupJsonPath = path.join(process.cwd(), 'public', 'assets', 'aistudio', 'respaldo_menu_sabor_cervanteno_2026-10-29_e56d8bac.json');
+  if (fs.existsSync(backupJsonPath)) {
+    const backupMenu = JSON.parse(fs.readFileSync(backupJsonPath, 'utf-8'));
+    if (Array.isArray(backupMenu.products)) {
+      const imgById = new Map<string, string>();
+      for (const bp of backupMenu.products) {
+        if (bp && bp.id && bp.image && typeof bp.image === 'string' && bp.image.startsWith('data:')) {
+          imgById.set(bp.id, bp.image);
+        }
+      }
+      for (const p of INITIAL_PRODUCTS) {
+        const img = imgById.get(p.id);
+        if (img && (!p.image || !p.image.startsWith('data:'))) {
+          p.image = img;
+        }
+      }
+    }
+  }
+} catch {}
+
 export function normalizeCategories(categories: Category[]): Category[] {
   if (!Array.isArray(categories)) return [];
   const legacyTestCategoryIds = new Set([
