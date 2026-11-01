@@ -552,16 +552,15 @@ export const HaciendaConfigModal: React.FC<{
                   {/* PIN de la Llave */}
                   <div className="space-y-2">
                     <label className="font-bold text-stone-700 block">
-                      PIN de la Llave Criptográfica (4 dígitos)
+                      PIN / Contraseña de la Llave Criptográfica
                     </label>
                     <div className="relative">
                       <input 
                         type={showPin ? 'text' : 'password'}
-                        maxLength={8}
                         value={config.cryptographicKeyPin || ''}
                         onChange={(e) => setConfig({ ...config, cryptographicKeyPin: e.target.value })}
                         className="w-full text-base font-black px-3 py-2.5 border border-stone-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none tracking-widest text-stone-800 bg-white"
-                        placeholder="••••"
+                        placeholder="••••••••"
                       />
                       <button 
                         type="button"
@@ -572,7 +571,7 @@ export const HaciendaConfigModal: React.FC<{
                       </button>
                     </div>
                     <p className="text-[10px] text-stone-500">
-                      PIN numérico configurado al momento de descargar la llave en ATV.
+                      PIN o contraseña configurada al descargar la llave criptográfica en Hacienda (ATV / Tribú-CR).
                     </p>
                   </div>
                 </div>
@@ -865,7 +864,7 @@ export const HaciendaConfigModal: React.FC<{
                         {testResult.keyValidation.message ||
                           (testResult.keyValidation.valid
                             ? 'Llave criptográfica .p12 verificada y lista para firmar.'
-                            : (testResult.keyValidation.error || 'Verifique el archivo .p12 y su PIN de 4 dígitos.'))}
+                            : (testResult.keyValidation.error || 'Verifique el archivo .p12 y su PIN o contraseña.'))}
                       </span>
                     </p>
                   )}

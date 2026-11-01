@@ -75,7 +75,7 @@ export class XmlSignerService {
       };
     }
 
-    if (!pin || pin.trim().length !== 4) {
+    if (!pin || pin.trim().length === 0) {
       return {
         valid: false,
         certificateFound: false,
@@ -83,7 +83,7 @@ export class XmlSignerService {
         keyMatchesCertificate: false,
         isExpired: false,
         certEnvironment: 'UNKNOWN',
-        error: 'El PIN de la llave criptográfica debe tener 4 dígitos numéricos'
+        error: 'Debe ingresar el PIN o contraseña de la llave criptográfica (.p12)'
       };
     }
 
@@ -136,7 +136,7 @@ export class XmlSignerService {
           keyMatchesCertificate: false,
           isExpired: false,
           certEnvironment: 'UNKNOWN',
-          error: 'No se encontró la llave privada RSA en el archivo .p12. Verifique que el PIN de 4 dígitos sea el correcto'
+          error: 'No se encontró la llave privada RSA en el archivo .p12. Verifique que el PIN o contraseña de la llave sea el correcto'
         };
       }
 
@@ -344,8 +344,8 @@ export class XmlSignerService {
       throw new Error('No se ha configurado la llave criptográfica (.p12) para firmar comprobantes electrónicos ante Hacienda.');
     }
 
-    if (!pin || pin.trim().length !== 4) {
-      throw new Error('El PIN de la llave criptográfica no está configurado o no tiene 4 dígitos.');
+    if (!pin || pin.trim().length === 0) {
+      throw new Error('El PIN o contraseña de la llave criptográfica no está configurado.');
     }
 
     // 1. Validar certificado y coherencia de ambiente

@@ -638,6 +638,23 @@ export class Database {
                 } else {
                   docsMap.set(k, docData);
                 }
+                const finalDoc = docsMap.get(k);
+                if (finalDoc?.xmlGenerated && k && !k.startsWith('PENDIENTE')) {
+                  try {
+                    const xmlPath = path.join(DATA_DIR, 'xmls', `${k}.xml`);
+                    if (!fs.existsSync(xmlPath)) {
+                      fs.writeFileSync(xmlPath, finalDoc.xmlGenerated, 'utf-8');
+                    }
+                  } catch {}
+                }
+                if (finalDoc?.xmlResponseHacienda && k && !k.startsWith('PENDIENTE')) {
+                  try {
+                    const respPath = path.join(DATA_DIR, 'xmls', `${k}_respuesta.xml`);
+                    if (!fs.existsSync(respPath)) {
+                      fs.writeFileSync(respPath, finalDoc.xmlResponseHacienda, 'utf-8');
+                    }
+                  } catch {}
+                }
                 recoveredCount++;
               }
             }
@@ -4466,6 +4483,46 @@ export class Database {
     return undefined;
   }
 
+  public async fetchElectronicDocumentFromCloud(keyOrId: string): Promise<ElectronicDocument | null> {
+    if (!firestoreDb) return null;
+    try {
+      const cleanKey = (keyOrId || '').trim();
+      if (!cleanKey) return null;
+      let snap = await getDoc(doc(firestoreDb, 'electronic_documents', cleanKey));
+      
+      if (!snap.exists() && /^\d{20}$/.test(cleanKey)) {
+        try {
+          const qSnap = await getDocs(query(collection(firestoreDb, 'electronic_documents'), where('consecutive', '==', cleanKey), limit(1)));
+          if (!qSnap.empty) {
+            snap = qSnap.docs[0] as any;
+          }
+        } catch {}
+      }
+
+      if (snap && snap.exists()) {
+        const cloudDoc = snap.data() as ElectronicDocument;
+        if (cloudDoc.numericKey) {
+          if (cloudDoc.xmlGenerated) {
+            try {
+              const xmlPath = path.join(DATA_DIR, 'xmls', `${cloudDoc.numericKey}.xml`);
+              if (!fs.existsSync(xmlPath)) fs.writeFileSync(xmlPath, cloudDoc.xmlGenerated, 'utf-8');
+            } catch {}
+          }
+          if (cloudDoc.xmlResponseHacienda) {
+            try {
+              const respPath = path.join(DATA_DIR, 'xmls', `${cloudDoc.numericKey}_respuesta.xml`);
+              if (!fs.existsSync(respPath)) fs.writeFileSync(respPath, cloudDoc.xmlResponseHacienda, 'utf-8');
+            } catch {}
+          }
+        }
+        return cloudDoc;
+      }
+    } catch (e) {
+      console.warn('⚠️ Error al recuperar comprobante desde Firestore:', e);
+    }
+    return null;
+  }
+
   public saveElectronicDocument(documentItem: ElectronicDocument): ElectronicDocument {
     // 1. Guardar copia física del XML individual en disco para descarga y auditoría
     if (documentItem.xmlGenerated && documentItem.numericKey) {
@@ -4487,34 +4544,48 @@ export class Database {
     }
 
     const existingIndex = (this.data.electronicDocuments || []).findIndex(d => d.id === documentItem.id || d.numericKey === documentItem.numericKey);
+    const existingDoc = existingIndex >= 0 ? this.data.electronicDocuments[existingIndex] : null;
+
+    // Preservar siempre el xmlGenerated y xmlResponseHacienda previos para que las actualizaciones de estado de Hacienda nunca borren el XML firmado
+    const resolvedXmlGenerated = documentItem.xmlGenerated || existingDoc?.xmlGenerated || (documentItem.numericKey ? this.getXmlForDocument(documentItem.numericKey) : undefined);
+    const resolvedXmlResponse = documentItem.xmlResponseHacienda || existingDoc?.xmlResponseHacienda || (documentItem.numericKey ? this.getXmlResponseForDocument(documentItem.numericKey) : undefined);
+
+    const mergedDoc: ElectronicDocument = {
+      ...(existingDoc || {}),
+      ...documentItem,
+      xmlGenerated: resolvedXmlGenerated,
+      xmlResponseHacienda: resolvedXmlResponse,
+      updatedAt: new Date().toISOString()
+    };
+
     if (existingIndex >= 0) {
-      this.data.electronicDocuments[existingIndex] = { ...documentItem, updatedAt: new Date().toISOString() };
+      this.data.electronicDocuments[existingIndex] = mergedDoc;
     } else {
-      this.data.electronicDocuments.unshift(documentItem);
+      this.data.electronicDocuments.unshift(mergedDoc);
     }
 
     this.invalidateElectronicDocsCache();
 
     // Vincular y actualizar venta asociada inmediatamente en memoria si existe
-    if (documentItem.saleId) {
-      const associatedSale = this.data.sales.find(s => s.id === documentItem.saleId);
+    if (mergedDoc.saleId) {
+      const associatedSale = this.data.sales.find(s => s.id === mergedDoc.saleId);
       if (associatedSale) {
         associatedSale.invoiceStatus = 'INVOICED';
-        associatedSale.electronicDocumentType = documentItem.documentType;
-        associatedSale.numericKey50 = documentItem.numericKey;
-        associatedSale.consecutive20 = documentItem.consecutive;
-        associatedSale.haciendaStatus = documentItem.status;
-        associatedSale.haciendaResponseMessage = documentItem.statusDescription;
-        associatedSale.xmlEmitted = documentItem.xmlGenerated || associatedSale.xmlEmitted;
-        associatedSale.xmlHaciendaResponse = documentItem.xmlResponseHacienda || associatedSale.xmlHaciendaResponse;
+        associatedSale.electronicDocumentType = mergedDoc.documentType;
+        associatedSale.numericKey50 = mergedDoc.numericKey;
+        associatedSale.consecutive20 = mergedDoc.consecutive;
+        associatedSale.haciendaStatus = mergedDoc.status;
+        associatedSale.haciendaResponseMessage = mergedDoc.statusDescription;
+        associatedSale.xmlEmitted = resolvedXmlGenerated || associatedSale.xmlEmitted;
+        associatedSale.xmlHaciendaResponse = resolvedXmlResponse || associatedSale.xmlHaciendaResponse;
         associatedSale.updatedAt = new Date().toISOString();
       }
 
       // AUTO-LIMPIEZA: Si se guardó un comprobante oficial emitido, purgar cualquier borrador temporal previo de esta venta
-      if (documentItem.numericKey && !documentItem.numericKey.startsWith('PENDIENTE')) {
+      if (mergedDoc.numericKey && !mergedDoc.numericKey.startsWith('PENDIENTE')) {
         this.data.electronicDocuments = (this.data.electronicDocuments || []).filter(d => {
           if (!d) return false;
-          if (d.saleId === documentItem.saleId && (d.numericKey?.startsWith('PENDIENTE') || d.id?.startsWith('pending-'))) return false;
+          if (d.saleId === mergedDoc.saleId && (d.numericKey?.startsWith('PENDIENTE') || d.id?.startsWith('pending-'))) return false;
           if (associatedSale?.orderNumber && (d.numericKey === `PENDIENTE-ORDEN-${associatedSale.orderNumber}` || (d.consecutive === `ORDEN-#${associatedSale.orderNumber}` && d.numericKey?.startsWith('PENDIENTE')))) return false;
           return true;
         });
@@ -4522,13 +4593,17 @@ export class Database {
       }
     }
 
-    // Sincronizar documento individual a Firestore de forma amortiguada
-    if (firestoreDb && !firestoreQuotaExceeded && documentItem.numericKey) {
+    // Sincronizar documento individual a Firestore de forma amortiguada garantizando persistencia del XML firmado
+    if (firestoreDb && !firestoreQuotaExceeded && mergedDoc.numericKey) {
       try {
-        const docRef = doc(firestoreDb, 'electronic_documents', documentItem.numericKey);
-        const cleanDoc = JSON.parse(JSON.stringify(documentItem));
+        const docRef = doc(firestoreDb, 'electronic_documents', mergedDoc.numericKey);
+        const cleanDoc = JSON.parse(JSON.stringify({
+          ...mergedDoc,
+          ...(resolvedXmlGenerated ? { xmlGenerated: resolvedXmlGenerated } : {}),
+          ...(resolvedXmlResponse ? { xmlResponseHacienda: resolvedXmlResponse } : {})
+        }));
         this.queueFirestoreWrite(async () => {
-          await setDoc(docRef, cleanDoc);
+          await setDoc(docRef, cleanDoc, { merge: true });
         });
       } catch (err) {
         // non-blocking

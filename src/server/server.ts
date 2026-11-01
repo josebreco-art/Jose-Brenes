@@ -1212,13 +1212,27 @@ app.get('/api/fiscal/electronic-documents', (req, res) => {
   res.json(lightweightDocs);
 });
 
-app.get('/api/fiscal/electronic-documents/:id', (req, res) => {
-  const doc = db.getElectronicDocumentById(req.params.id);
+app.get('/api/fiscal/electronic-documents/:id', async (req, res) => {
+  let doc = db.getElectronicDocumentById(req.params.id);
+  let xmlGen = doc ? (db.getXmlForDocument(doc.numericKey) || doc.xmlGenerated) : undefined;
+  let xmlResp = doc ? (db.getXmlResponseForDocument(doc.numericKey) || doc.xmlResponseHacienda) : undefined;
+
+  const keyToLookup = doc?.numericKey || req.params.id;
+  if ((!doc || !xmlGen || !xmlResp) && keyToLookup) {
+    try {
+      const cloudDoc = await db.fetchElectronicDocumentFromCloud(keyToLookup);
+      if (cloudDoc) {
+        if (!doc) doc = cloudDoc;
+        if (!xmlGen && cloudDoc.xmlGenerated) xmlGen = cloudDoc.xmlGenerated;
+        if (!xmlResp && cloudDoc.xmlResponseHacienda) xmlResp = cloudDoc.xmlResponseHacienda;
+      }
+    } catch {}
+  }
+
   if (!doc) {
     return res.status(404).json({ error: 'Comprobante no encontrado' });
   }
-  const xmlGen = db.getXmlForDocument(doc.numericKey) || doc.xmlGenerated;
-  const xmlResp = db.getXmlResponseForDocument(doc.numericKey) || doc.xmlResponseHacienda;
+
   res.json({
     ...doc,
     xmlGenerated: xmlGen,
