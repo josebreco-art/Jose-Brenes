@@ -347,9 +347,18 @@ export const CustomersManager: React.FC<CustomersManagerProps> = ({
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {c.identification === '000000000' || c.id === 'cust-generic-cash' ? (
-                          <div className="flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200" title="Registro protegido del sistema">
-                            <span>SISTEMA</span>
-                          </div>
+                          <>
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200" title="Registro protegido del sistema">
+                              <span>SISTEMA</span>
+                            </div>
+                            <button
+                              onClick={() => handleStartEdit(c)}
+                              className="p-1.5 text-stone-600 hover:text-amber-700 hover:bg-amber-100 rounded-lg transition-colors cursor-pointer"
+                              title="Editar datos del Cliente del Sistema"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                          </>
                         ) : (
                           <>
                             <button

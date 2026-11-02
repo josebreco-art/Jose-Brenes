@@ -2131,7 +2131,7 @@ export const INITIAL_CUSTOMERS: Customer[] = [
     name: 'Cliente de Contado / Consumidor Final',
     identification: '000000000',
     identificationType: '01',
-    email: 'facturas@saborcervanteno.cr',
+    email: 'saborcervantes@gmail.com',
     phone: '2534-0000',
     address: 'Cervantes, Cartago',
     province: '3',
