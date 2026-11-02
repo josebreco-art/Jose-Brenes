@@ -2693,7 +2693,7 @@ async function startServer() {
     console.log(`🍗 POS Pollo Frito Sabor Cervanteño running on port ${PORT}`);
     console.log(`🗄️ Base de datos local inicializada.`);
 
-    // Inicialización asíncrona diferida para garantizar que los probes de Cloud Run pasen de inmediato
+    // Inicialización inmediata al arrancar para tener la llave y credenciales de Firestore antes de recibir tráfico
     const initTimer = setTimeout(() => {
       db.initialize()
         .then(() => {
@@ -2702,7 +2702,7 @@ async function startServer() {
         .catch((err: any) => {
           console.warn('⚠️ Error no bloqueante al inicializar Firebase Firestore:', err?.message || err);
         });
-    }, 6000);
+    }, 200);
     if (initTimer.unref) initTimer.unref();
   });
 

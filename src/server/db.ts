@@ -316,9 +316,6 @@ export class Database {
     const localCryptoKey = (localHaciendaConfig.cryptographicKeyBase64 && localHaciendaConfig.cryptographicKeyBase64 !== '[STORED_LOCALLY]' && localHaciendaConfig.cryptographicKeyBase64.length > 50)
       ? localHaciendaConfig.cryptographicKeyBase64
       : this.loadLocalCryptoKey();
-    if (localCryptoKey) {
-      this.saveLocalCryptoKey(localCryptoKey);
-    }
 
     if (firestoreDb && !firestoreQuotaExceeded) {
       console.log('⏳ Verificando base de datos persistente en Firebase Firestore...');
@@ -390,29 +387,35 @@ export class Database {
             });
           }
 
-          if (localCryptoKey) {
+          // BLINDAJE DEFINITIVO: La llave oficial en la nube (Firestore pos_data/hacienda_crypto_key)
+          // siempre tiene prioridad absoluta para que ningún reinicio vuelva a usar una llave vieja del disco.
+          let cloudCryptoKey: string | null = null;
+          try {
+            const cryptoSnap = await getDoc(doc(firestoreDb, 'pos_data', 'hacienda_crypto_key'));
+            if (cryptoSnap.exists()) {
+              const k = cryptoSnap.data()?.cryptographicKeyBase64;
+              if (k && k.length > 50 && k !== '[STORED_LOCALLY]') {
+                cloudCryptoKey = k.trim();
+              }
+            }
+          } catch (cryptoErr) {
+            console.warn('⚠️ Error al consultar hacienda_crypto_key en Firestore:', cryptoErr);
+          }
+
+          if (cloudCryptoKey) {
+            mergedHaciendaConfig.cryptographicKeyBase64 = cloudCryptoKey;
+            // Actualizar la caché de disco local con la llave oficial vigente de la nube
+            this.saveLocalCryptoKey(cloudCryptoKey);
+          } else if (localCryptoKey) {
             mergedHaciendaConfig.cryptographicKeyBase64 = localCryptoKey;
-          } else if (!mergedHaciendaConfig.cryptographicKeyBase64 || mergedHaciendaConfig.cryptographicKeyBase64 === '[STORED_LOCALLY]') {
+          } else {
             const diskKey = this.loadLocalCryptoKey();
             if (diskKey) {
               mergedHaciendaConfig.cryptographicKeyBase64 = diskKey;
-            } else {
-              try {
-                const cryptoSnap = await getDoc(doc(firestoreDb, 'pos_data', 'hacienda_crypto_key'));
-                if (cryptoSnap.exists()) {
-                  const cloudCryptoKey = cryptoSnap.data()?.cryptographicKeyBase64;
-                  if (cloudCryptoKey && cloudCryptoKey.length > 50 && cloudCryptoKey !== '[STORED_LOCALLY]') {
-                    mergedHaciendaConfig.cryptographicKeyBase64 = cloudCryptoKey;
-                    this.saveLocalCryptoKey(cloudCryptoKey);
-                  }
-                }
-              } catch (cryptoErr) {
-                // Ignorar error de lectura secundaria
-              }
             }
-            if (mergedHaciendaConfig.cryptographicKeyBase64 === '[STORED_LOCALLY]') {
-              mergedHaciendaConfig.cryptographicKeyBase64 = '';
-            }
+          }
+          if (mergedHaciendaConfig.cryptographicKeyBase64 === '[STORED_LOCALLY]') {
+            mergedHaciendaConfig.cryptographicKeyBase64 = '';
           }
 
           // Validar estado de llave
