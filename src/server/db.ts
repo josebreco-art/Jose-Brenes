@@ -608,8 +608,13 @@ export class Database {
         try {
           console.log('📑 Consultando comprobantes recientes en Firestore electronic_documents...');
           const docsColRef = collection(firestoreDb, 'electronic_documents');
-          // Limitar a los 100 comprobantes más recientes para nunca exceder el buffer de 128 MiB de Firestore
-          const docsSnap = await getDocs(query(docsColRef, limit(100)));
+          // Obtener los 80 comprobantes más recientes por fecha de creación para tener siempre los del día actual
+          let docsSnap;
+          try {
+            docsSnap = await getDocs(query(docsColRef, orderBy('createdAt', 'desc'), limit(80)));
+          } catch {
+            docsSnap = await getDocs(query(docsColRef, limit(80)));
+          }
           
           const docsMap = new Map<string, ElectronicDocument>();
           
@@ -4719,6 +4724,7 @@ export class Database {
     const cleanTerminal = (terminal || '1').replace(/\D/g, '').padStart(5, '0').slice(-5);
     const cleanDocType = (docType || '04').replace(/\D/g, '').padStart(2, '0').slice(-2) as '01' | '04' | '03' | '02' | '05' | '06';
     const key = `seq-${cleanBranch}-${cleanTerminal}-${cleanDocType}`;
+    const prefix = `${cleanBranch}${cleanTerminal}${cleanDocType}`;
 
     // Extraer limpiamente el número de secuencia evitando cadenas largas o códigos de 20 dígitos
     let parsedNum = 0;
@@ -4736,7 +4742,39 @@ export class Database {
       }
     }
 
-    const nextSequence = Math.max(1, parsedNum + 1);
+    // BLINDAJE ANTI-RETROCESO: Jamás permitir que al guardar la ventana de configuración
+    // se devuelva el consecutivo a un número menor al último comprobante real ya emitido.
+    let highestRealEmitted = 0;
+    for (const s of (this.data.sales || [])) {
+      if (s?.consecutive20 && s.consecutive20.startsWith(prefix) && s.consecutive20.length === 20) {
+        const seq = parseInt(s.consecutive20.slice(10), 10) || 0;
+        if (seq > highestRealEmitted) highestRealEmitted = seq;
+      }
+    }
+    for (const d of (this.data.electronicDocuments || [])) {
+      if (d?.consecutive && d.consecutive.startsWith(prefix) && d.consecutive.length === 20) {
+        const seq = parseInt(d.consecutive.slice(10), 10) || 0;
+        if (seq > highestRealEmitted) highestRealEmitted = seq;
+      }
+    }
+
+    const existingLocal = (this.data.consecutiveControls || []).find(c => c.id === key);
+    if (existingLocal && Number(existingLocal.lastSequenceNumber) > highestRealEmitted) {
+      highestRealEmitted = Number(existingLocal.lastSequenceNumber) || 0;
+    }
+
+    if (firestoreDb && !firestoreQuotaExceeded) {
+      try {
+        const snap = await getDoc(doc(firestoreDb, 'fiscal_counters', key));
+        if (snap.exists()) {
+          const cloudLast = Number(snap.data()?.lastSequenceNumber) || 0;
+          if (cloudLast > highestRealEmitted) highestRealEmitted = cloudLast;
+        }
+      } catch {}
+    }
+
+    const safeLastUsed = Math.max(parsedNum, highestRealEmitted);
+    const nextSequence = Math.max(1, safeLastUsed + 1);
 
     const control: ConsecutiveControl = {
       id: key,
@@ -4744,11 +4782,11 @@ export class Database {
       terminal: cleanTerminal,
       documentType: cleanDocType,
       currentSequence: nextSequence,
-      lastSequenceNumber: parsedNum,
+      lastSequenceNumber: safeLastUsed,
       updatedAt: new Date().toISOString()
     };
 
-    // Actualizar también en el registro local
+    // Actualizar también en el registro local y en haciendaDirectConfig
     if (!this.data.consecutiveControls) {
       this.data.consecutiveControls = [];
     }
@@ -4758,6 +4796,16 @@ export class Database {
     } else {
       this.data.consecutiveControls.push(control);
     }
+
+    if (this.data.haciendaDirectConfig) {
+      if (cleanDocType === '01') this.data.haciendaDirectConfig.lastFacturaNumber = safeLastUsed;
+      else if (cleanDocType === '02') this.data.haciendaDirectConfig.lastNotaDebitoNumber = safeLastUsed;
+      else if (cleanDocType === '03') this.data.haciendaDirectConfig.lastNotaCreditoNumber = safeLastUsed;
+      else if (cleanDocType === '04') this.data.haciendaDirectConfig.lastTiqueteNumber = safeLastUsed;
+      else if (cleanDocType === '05') this.data.haciendaDirectConfig.lastFacturaCompraNumber = safeLastUsed;
+      else if (cleanDocType === '06') this.data.haciendaDirectConfig.lastReciboPagoNumber = safeLastUsed;
+    }
+
     this.persist();
 
     if (firestoreDb && !firestoreQuotaExceeded) {
