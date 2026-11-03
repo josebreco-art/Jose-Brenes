@@ -1064,13 +1064,38 @@ export class ElectronicInvoicingEngine {
     let stillProcessing = 0;
     let totalChecked = 0;
 
-    // 1. Grupo A: Sondeo de documentos ya enviados en espera de resolución DGT
+    // 1. Grupo A: Sondeo de documentos ya enviados en espera de resolución DGT con Escala Progresiva:
+    // - Primeros 5 min: cada 1 min
+    // - De 5 a 20 min: cada 5 min
+    // - De 20 min a 3 horas: cada 10 min
+    // - De 3 a 72 horas: cada 30 min
     const pendingProcessing = docs
       .filter(d => {
+        if (!d || !d.numericKey || !/^\d{50}$/.test(d.numericKey)) return false;
         const isPendingStatus = d.status === 'ENVIADO_PROCESANDO' || d.status === 'RECIBIDO_HACIENDA';
-        const docAge = d.createdAt ? (now - new Date(d.createdAt).getTime()) : 0;
-        const underRetryCap = (d.retryAttempts || 0) < 30;
-        return isPendingStatus && underRetryCap && docAge < seventyTwoHours;
+        if (!isPendingStatus) return false;
+
+        const createdTime = d.createdAt ? new Date(d.createdAt).getTime() : (d.issueDate ? new Date(d.issueDate).getTime() : now);
+        const docAge = Math.max(0, now - (isNaN(createdTime) ? now : createdTime));
+        if (docAge >= seventyTwoHours) return false;
+
+        const underRetryCap = (d.retryAttempts || 0) < 300;
+        if (!underRetryCap) return false;
+
+        const lastCheckStr = d.lastAttemptDate || d.lastQueryTimestamp || d.sendTimestamp;
+        const lastCheckTime = lastCheckStr ? new Date(lastCheckStr).getTime() : 0;
+        const elapsedSinceLastCheck = lastCheckTime > 0 && !isNaN(lastCheckTime) ? (now - lastCheckTime) : Infinity;
+
+        let minIntervalMs = 55 * 1000; // Primeros 5 minutos: ~1 minuto
+        if (docAge >= 3 * 60 * 60 * 1000) {
+          minIntervalMs = 29 * 60 * 1000; // Después de 3 horas: cada 30 minutos
+        } else if (docAge >= 20 * 60 * 1000) {
+          minIntervalMs = 9.5 * 60 * 1000; // De 20 min a 3 horas: cada 10 minutos
+        } else if (docAge >= 5 * 60 * 1000) {
+          minIntervalMs = 4.5 * 60 * 1000; // De 5 a 20 minutos: cada 5 minutos
+        }
+
+        return elapsedSinceLastCheck >= minIntervalMs;
       })
       .slice(0, 20);
 
@@ -1088,8 +1113,12 @@ export class ElectronicInvoicingEngine {
     }
 
     // 2. Grupo B: Transmisión de comprobantes emitidos en modo Offline / Contingencia (Situación 3 o 2)
+    // Bloquear estrictamente cualquier borrador temporal (PENDIENTE-ORDEN-...) que no tenga clave de 50 dígitos
     const offlinePending = docs
-      .filter(d => d.status === 'SIN_INTERNET_PENDIENTE' || d.status === 'CONTINGENCIA_PENDIENTE' || d.status === 'CONTINGENCIA' || d.status === 'PENDIENTE_ENVIO')
+      .filter(d =>
+        Boolean(d && d.numericKey && /^\d{50}$/.test(d.numericKey)) &&
+        (d.status === 'SIN_INTERNET_PENDIENTE' || d.status === 'CONTINGENCIA_PENDIENTE' || d.status === 'CONTINGENCIA' || d.status === 'PENDIENTE_ENVIO')
+      )
       .slice(0, 10);
 
     if (offlinePending.length > 0 && directConfig.enabled && directConfig.haciendaUsername && directConfig.haciendaPassword) {
