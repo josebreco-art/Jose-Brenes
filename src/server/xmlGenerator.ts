@@ -367,8 +367,8 @@ export class HaciendaXmlGenerator {
         case 'CHECK': medioCode = '03'; break;
         case 'TRANSFER': medioCode = '04'; break;
         case 'THIRD_PARTY': medioCode = '05'; break;
-        case 'SINPE': medioCode = '04'; break;
-        case 'DIGITAL_PLATFORM': medioCode = '05'; break;
+        case 'SINPE': medioCode = '06'; break;
+        case 'DIGITAL_PLATFORM': medioCode = '07'; break;
         case 'OTHER': medioCode = '99'; break;
         default: medioCode = '01'; break;
       }
