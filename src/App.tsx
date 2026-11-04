@@ -1795,6 +1795,7 @@ export default function App() {
             onOpenPaymentModal={handleOpenPaymentModal}
             onSendToKitchen={handleSendToKitchenDirect}
             onAddNewCustomer={() => setActiveTab('customers')}
+            onNavigateToCashRegister={() => setActiveTab('cash')}
             isKitchenSent={Boolean(activeKitchenOrderId)}
             isSendingToKitchen={isSendingKitchen}
             cashRegister={cashRegister}

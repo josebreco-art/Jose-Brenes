@@ -119,6 +119,8 @@ export const CashRegisterScreen: React.FC<CashRegisterScreenProps> = ({
 
   // Print Cierre de Caja Modal state
   const [showClosingPrintModal, setShowClosingPrintModal] = useState<boolean>(false);
+  // Modal de advertencia de seguridad para confirmar cierre definitivo
+  const [showConfirmCloseModal, setShowConfirmCloseModal] = useState<boolean>(false);
   const [paperWidth, setPaperWidth] = useState<'80mm' | '56mm'>('80mm');
   const [companyInfo, setCompanyInfo] = useState<RestaurantCompanyInfo | null>(null);
   const [haciendaConfig, setHaciendaConfig] = useState<HaciendaDirectConfig | null>(null);
@@ -156,8 +158,15 @@ export const CashRegisterScreen: React.FC<CashRegisterScreenProps> = ({
     await onOpenRegister(openingInput, cleanName);
   };
 
-  const handleClose = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Abre la advertencia de seguridad para evitar cierres accidentales
+  const handleClose = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setShowConfirmCloseModal(true);
+  };
+
+  // Ejecución definitiva una vez confirmado por el cajero
+  const handleConfirmAndExecuteClose = async () => {
+    setShowConfirmCloseModal(false);
     await onCloseRegister(countedInput, closeNotes);
     setShowClosingPrintModal(true);
   };
@@ -176,6 +185,9 @@ export const CashRegisterScreen: React.FC<CashRegisterScreenProps> = ({
   const regDay = activeRegister?.openTime 
     ? getCostaRicaDate(new Date(activeRegister.openTime).getTime()) 
     : todayCr;
+
+  // Detección de turno abierto que quedó pendiente de un día anterior
+  const isRegisterFromPreviousDay = isOpen && Boolean(activeRegister?.openTime) && (regDay < todayCr);
 
   const currentShiftSales = (activeSales || []).filter(s => {
     if (!s) return false;
@@ -308,11 +320,48 @@ export const CashRegisterScreen: React.FC<CashRegisterScreenProps> = ({
   return (
     <div className="flex-1 flex flex-col h-[calc(100vh-100px)] overflow-y-auto bg-stone-50 p-4 space-y-4">
       
+      {/* Alerta Destacada: Turno de Caja Pendiente de Ayer */}
+      {isRegisterFromPreviousDay && (
+        <div className="p-4 bg-amber-50 border-2 border-amber-500 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-md animate-pulse">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Clock className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="text-sm font-black text-amber-950 flex items-center gap-2">
+                <span>⚠️ TURNO DE CAJA PENDIENTE DEL DÍA ANTERIOR ({regDay})</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 text-amber-900 uppercase">
+                  Requiere Cierre
+                </span>
+              </div>
+              <p className="text-xs text-amber-900 mt-1 leading-relaxed">
+                Esta caja quedó abierta desde el <strong>{formatDate(activeRegister?.openTime || '')} a las {formatTime(activeRegister?.openTime || '')}</strong> por <strong>{activeRegister?.cashierName || 'Cajero'}</strong>.
+                Para evitar mezclar las ventas del día de hoy (<strong>{todayCr}</strong>) con las de ayer, <strong>realice el conteo y cierre de esta caja</strong> antes de iniciar el nuevo turno.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.getElementById('confirm-shift-close-btn');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+                el.focus();
+              }
+            }}
+            className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black shrink-0 shadow-sm cursor-pointer transition-transform active:scale-95 flex items-center gap-1.5"
+          >
+            <span>Ir al Arqueo y Cierre</span>
+            <Lock className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Top Banner */}
       <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-xs ${
-            isOpen ? 'bg-emerald-600' : 'bg-stone-700'
+            isOpen ? (isRegisterFromPreviousDay ? 'bg-amber-600' : 'bg-emerald-600') : 'bg-stone-700'
           }`}>
             <DollarSign className="w-5 h-5" />
           </div>
@@ -322,9 +371,11 @@ export const CashRegisterScreen: React.FC<CashRegisterScreenProps> = ({
                 Control y Cierre de Caja
               </h2>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase ${
-                isOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                isOpen 
+                  ? (isRegisterFromPreviousDay ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-100 text-emerald-800') 
+                  : 'bg-red-100 text-red-800'
               }`}>
-                {isOpen ? 'Caja Abierta' : 'Caja Cerrada'}
+                {isOpen ? (isRegisterFromPreviousDay ? '⚠️ Caja Abierta de Ayer' : 'Caja Abierta') : 'Caja Cerrada'}
               </span>
             </div>
             <p className="text-xs text-stone-500">
@@ -665,12 +716,29 @@ export const CashRegisterScreen: React.FC<CashRegisterScreenProps> = ({
           </div>
 
           {/* Close Shift Panel */}
-          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className={`p-5 rounded-2xl shadow-xs space-y-4 flex flex-col justify-between transition-all ${
+            isRegisterFromPreviousDay 
+              ? 'bg-amber-50/50 border-2 border-amber-500 ring-4 ring-amber-400/20' 
+              : 'bg-white border border-stone-200'
+          }`}>
             <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-stone-100 pb-2">
-                <Lock className="w-5 h-5 text-amber-600" />
-                <h3 className="font-extrabold text-base text-stone-900">Arqueo y Cierre de Caja</h3>
+              <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-amber-600" />
+                  <h3 className="font-extrabold text-base text-stone-900">Arqueo y Cierre de Caja</h3>
+                </div>
+                {isRegisterFromPreviousDay && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500 text-white uppercase tracking-wider">
+                    Jornada Anterior
+                  </span>
+                )}
               </div>
+
+              {isRegisterFromPreviousDay && (
+                <div className="p-2.5 rounded-xl bg-amber-100/90 border border-amber-300 text-amber-950 text-xs font-semibold">
+                  ⚠️ <strong>Cierre pendiente de ayer ({regDay}):</strong> Realice el conteo para cuadrar este turno antes de abrir la caja de hoy.
+                </div>
+              )}
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-stone-700 block">
@@ -726,11 +794,115 @@ export const CashRegisterScreen: React.FC<CashRegisterScreenProps> = ({
             <button
               id="confirm-shift-close-btn"
               onClick={handleClose}
-              className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className={`w-full py-3 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
+                isRegisterFromPreviousDay 
+                  ? 'bg-amber-600 hover:bg-amber-700 ring-2 ring-amber-400' 
+                  : 'bg-stone-900 hover:bg-stone-800'
+              }`}
             >
               <Lock className="w-4 h-4 text-amber-400" />
-              <span>Realizar Cierre de Caja</span>
+              <span>{isRegisterFromPreviousDay ? 'Realizar Cierre de Ayer' : 'Realizar Cierre de Caja'}</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Advertencia de Seguridad: Confirmación Obligatoria de Cierre */}
+      {showConfirmCloseModal && (
+        <div className="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0 text-amber-700">
+                <AlertCircle className="w-7 h-7 stroke-[2.5]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-black text-base sm:text-lg text-stone-900 leading-snug">
+                  ¿Confirmar Cierre de Turno de Caja?
+                </h3>
+                <p className="text-xs text-stone-600 mt-1">
+                  {isRegisterFromPreviousDay ? (
+                    <span>
+                      Está por cerrar el turno pendiente de ayer (<strong>{regDay}</strong>) de <strong>{activeRegister?.cashierName || 'Cajero'}</strong>. Una vez cerrado, el sistema quedará listo para abrir la caja del día de hoy.
+                    </span>
+                  ) : (
+                    <span>
+                      Esta acción dará por finalizado el turno actual de <strong>{activeRegister?.cashierName || currentUser?.name || 'Cajero Principal'}</strong> y archivará el arqueo de caja.
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Resumen del Arqueo en Tarjeta Destacada */}
+            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-3.5 space-y-2 text-xs">
+              <div className="text-[11px] font-black text-stone-500 uppercase tracking-wider border-b border-stone-200 pb-1.5 flex justify-between">
+                <span>Resumen del Arqueo a Cerrar</span>
+                <span>Jornada: {regDay}</span>
+              </div>
+              
+              <div className="flex justify-between items-center text-stone-600">
+                <span>Fondo Inicial de Apertura:</span>
+                <span className="font-bold text-stone-900">{formatCurrency(openingBalance)}</span>
+              </div>
+
+              <div className="flex justify-between items-center text-stone-600">
+                <span>Ventas en Efectivo:</span>
+                <span className="font-bold text-emerald-700">{formatCurrency(effectiveCashSales)}</span>
+              </div>
+
+              <div className="flex justify-between items-center text-stone-700 font-bold pt-1 border-t border-stone-200">
+                <span>Efectivo Esperado en Gaveta:</span>
+                <span className="font-black text-stone-900">{formatCurrency(effectiveExpectedCash)}</span>
+              </div>
+
+              <div className="flex justify-between items-center text-stone-900 font-extrabold">
+                <span>Efectivo Contado por el Cajero:</span>
+                <span className="font-black text-blue-700 text-sm">{formatCurrency(countedInput)}</span>
+              </div>
+
+              <div className={`flex justify-between items-center font-black p-2 rounded-xl mt-1 ${
+                difference === 0 
+                  ? 'bg-emerald-100/90 text-emerald-950 border border-emerald-300' 
+                  : difference > 0 
+                  ? 'bg-blue-100/90 text-blue-950 border border-blue-300' 
+                  : 'bg-rose-100/90 text-rose-950 border border-rose-300'
+              }`}>
+                <span>Diferencia de Caja:</span>
+                <span>
+                  {difference > 0 ? `+${formatCurrency(difference)} (Sobrante)` : 
+                   difference < 0 ? `-${formatCurrency(Math.abs(difference))} (Faltante)` : 
+                   'Cuadre Exacto (₡0)'}
+                </span>
+              </div>
+
+              {closeNotes && closeNotes.trim() && (
+                <div className="text-[11px] text-stone-600 italic pt-1 border-t border-stone-200 truncate">
+                  <strong>Observación:</strong> "{closeNotes.trim()}"
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
+              <button
+                type="button"
+                id="cancel-close-modal-btn"
+                onClick={() => setShowConfirmCloseModal(false)}
+                className="flex-1 py-3 px-3 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold transition-all text-center cursor-pointer border border-stone-300"
+              >
+                ✖ Cancelar y Volver a la Caja
+              </button>
+              <button
+                type="button"
+                id="execute-close-modal-btn"
+                onClick={handleConfirmAndExecuteClose}
+                className="flex-1 py-3 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+              >
+                <Lock className="w-4 h-4 text-white" />
+                <span>🔒 Sí, Cerrar Definitivo</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

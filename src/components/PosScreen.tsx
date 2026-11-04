@@ -21,12 +21,14 @@ import {
   PauseCircle,
   Play,
   Clock,
+  Lock,
   X
 } from 'lucide-react';
 import { Product, Category, Customer, CartItem, OrderType, LocationType, ProductModifier, PausedOrder, CashRegister, UserProfile, KitchenObservation } from '../types/pos';
 import { PosApiService } from '../services/api';
 import { getLocalProductImage } from '../utils/productImages';
 import { calculateFiscalPriceBreakdown } from '../server/taxRules';
+import { getCostaRicaDate } from '../utils/dateUtils';
 
 interface PosScreenProps {
   products: Product[];
@@ -52,6 +54,7 @@ interface PosScreenProps {
   onOpenPaymentModal: () => void;
   onSendToKitchen: () => void;
   onAddNewCustomer: () => void;
+  onNavigateToCashRegister?: () => void;
   isKitchenSent?: boolean;
   isSendingToKitchen?: boolean;
   cashRegister?: CashRegister | null;
@@ -82,11 +85,19 @@ export const PosScreen: React.FC<PosScreenProps> = ({
   onOpenPaymentModal,
   onSendToKitchen,
   onAddNewCustomer,
+  onNavigateToCashRegister,
   isKitchenSent = false,
   isSendingToKitchen = false,
   cashRegister,
   currentUser
 }) => {
+  const todayCr = getCostaRicaDate();
+  const registerOpenDay = cashRegister?.openTime 
+    ? getCostaRicaDate(new Date(cashRegister.openTime).getTime()) 
+    : todayCr;
+  const isRegisterFromPreviousDay = cashRegister?.status === 'OPEN' && Boolean(cashRegister?.openTime) && (registerOpenDay < todayCr);
+  const [showYesterdayCashWarningModal, setShowYesterdayCashWarningModal] = useState<boolean>(false);
+
   const activeCategories = categories.filter(c => c.active);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(() => {
     return activeCategories.length > 0 ? activeCategories[0].id : 'cat-1787257504257';
@@ -304,6 +315,28 @@ export const PosScreen: React.FC<PosScreenProps> = ({
 
       {/* ----------------- CENTER: PRODUCTS GRID & SEARCH ----------------- */}
       <main className="flex-1 flex flex-col overflow-hidden bg-stone-50">
+        {/* Banner de Advertencia de Caja de Ayer */}
+        {isRegisterFromPreviousDay && (
+          <div className="bg-amber-500 text-amber-950 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shadow-xs font-semibold text-xs border-b border-amber-600 animate-pulse shrink-0">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 shrink-0 text-amber-950" />
+              <span>
+                <strong>Atención:</strong> La caja registradora está abierta desde el <strong>{registerOpenDay}</strong> ({cashRegister?.cashierName || 'Cajero'}). Debe cerrarla para iniciar el nuevo turno de hoy ({todayCr}).
+              </span>
+            </div>
+            {onNavigateToCashRegister && (
+              <button
+                type="button"
+                id="pos-go-close-yesterday-cash-btn"
+                onClick={onNavigateToCashRegister}
+                className="px-3 py-1 bg-amber-950 hover:bg-black text-white font-extrabold text-[11px] rounded-lg shrink-0 cursor-pointer transition-all shadow-xs"
+              >
+                Cerrar Caja de Ayer →
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Search and Filter Bar */}
         <div className="p-3 bg-white border-b border-stone-200 flex items-center justify-between gap-3 shadow-xs">
           <div className="relative flex-1 max-w-md">
@@ -802,7 +835,13 @@ export const PosScreen: React.FC<PosScreenProps> = ({
             <button
               id="checkout-and-invoice-btn"
               type="button"
-              onClick={onOpenPaymentModal}
+              onClick={() => {
+                if (isRegisterFromPreviousDay) {
+                  setShowYesterdayCashWarningModal(true);
+                  return;
+                }
+                onOpenPaymentModal();
+              }}
               disabled={cart.length === 0 || Boolean(isSendingToKitchen)}
               className="py-2.5 px-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[11.5px] font-extrabold rounded-xl transition-all shadow-md flex items-center justify-center gap-1 active:scale-95"
               title={isKitchenSent ? "Actualizar comanda en cocina y proceder al cobro" : "Enviar a cocina y proceder al cobro"}
@@ -1281,6 +1320,63 @@ export const PosScreen: React.FC<PosScreenProps> = ({
               >
                 Cerrar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Advertencia: Turno de Caja Pendiente de Ayer antes de Cobrar */}
+      {showYesterdayCashWarningModal && (
+        <div className="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0 text-amber-700">
+                <Clock className="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-black text-base sm:text-lg text-stone-900 leading-snug">
+                  Caja Registradora Abierta de Ayer
+                </h3>
+                <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                  El turno de caja actual fue abierto el <strong>{registerOpenDay}</strong> por <strong>{cashRegister?.cashierName || 'Cajero'}</strong> y no se realizó el cierre al finalizar la noche.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-950 space-y-1.5">
+              <div className="font-extrabold flex items-center gap-1.5">
+                <span>⚠️ Advertencia Contable:</span>
+              </div>
+              <p className="leading-relaxed">
+                Para evitar mezclar las ventas del día de hoy ({todayCr}) con las de ayer y mantener los reportes limpios, debe <strong>cerrar la caja de ayer primero</strong> y abrir la nueva jornada de hoy con su nuevo fondo.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowYesterdayCashWarningModal(false);
+                  onOpenPaymentModal();
+                }}
+                className="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold transition-all text-center border border-stone-300 cursor-pointer"
+              >
+                Continuar con este cobro
+              </button>
+              {onNavigateToCashRegister && (
+                <button
+                  type="button"
+                  id="modal-go-close-yesterday-cash-btn"
+                  onClick={() => {
+                    setShowYesterdayCashWarningModal(false);
+                    onNavigateToCashRegister();
+                  }}
+                  className="py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+                >
+                  <Lock className="w-4 h-4 text-white" />
+                  <span>Ir a Cerrar Caja de Ayer</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

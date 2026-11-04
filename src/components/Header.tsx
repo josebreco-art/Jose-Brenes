@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { LocationType, CashRegister, UserProfile } from '../types/pos';
 import { PosApiService } from '../services/api';
+import { getCostaRicaDate } from '../utils/dateUtils';
 import { SyncStatusModal } from './SyncStatusModal';
 
 interface HeaderProps {
@@ -155,6 +156,12 @@ export const Header: React.FC<HeaderProps> = ({
     return (currentUser.permissions as any)[tab.permKey] ?? true;
   });
 
+  const todayCr = getCostaRicaDate();
+  const registerOpenDay = cashRegister?.openTime 
+    ? getCostaRicaDate(new Date(cashRegister.openTime).getTime()) 
+    : todayCr;
+  const isRegisterFromPreviousDay = cashRegister?.status === 'OPEN' && Boolean(cashRegister?.openTime) && (registerOpenDay < todayCr);
+
   return (
     <header className="bg-amber-950 text-white border-b border-amber-900 sticky top-0 z-40 shrink-0 shadow-md">
       <div className="px-3 py-1 flex items-center justify-between gap-2">
@@ -224,13 +231,27 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('cash')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs cursor-pointer transition-colors ${
               cashRegister?.status === 'OPEN' 
-                ? 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/60' 
+                ? isRegisterFromPreviousDay
+                  ? 'bg-amber-900/90 border-amber-500 text-amber-200 hover:bg-amber-800 ring-1 ring-amber-400/50'
+                  : 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/60' 
                 : 'bg-rose-950/60 border-rose-700/60 text-rose-300 hover:bg-rose-900/60'
             }`}
-            title={`Caja registradora: ${cashRegister?.status === 'OPEN' ? 'Abierta (clic para ver arqueo)' : 'Cerrada (clic para abrir)'}`}
+            title={`Caja registradora: ${
+              cashRegister?.status === 'OPEN' 
+                ? (isRegisterFromPreviousDay ? '⚠️ Caja abierta de ayer (haga clic para cerrarla antes de hoy)' : 'Abierta (clic para ver arqueo)') 
+                : 'Cerrada (clic para abrir)'
+            }`}
           >
-            <span className={`w-2 h-2 rounded-full ${cashRegister?.status === 'OPEN' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`}></span>
-            <span className="font-semibold">{cashRegister?.status === 'OPEN' ? 'Caja Abierta' : 'Caja Cerrada'}</span>
+            <span className={`w-2 h-2 rounded-full ${
+              cashRegister?.status === 'OPEN' 
+                ? (isRegisterFromPreviousDay ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse') 
+                : 'bg-rose-400'
+            }`}></span>
+            <span className="font-semibold">
+              {cashRegister?.status === 'OPEN' 
+                ? (isRegisterFromPreviousDay ? '⚠️ Caja de Ayer' : 'Caja Abierta') 
+                : 'Caja Cerrada'}
+            </span>
           </div>
 
           {/* Online / Offline Internet Status */}
